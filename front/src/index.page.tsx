@@ -7,7 +7,7 @@ export default function Index() {
   console.log(queue.map((v) => v.Name).join(", "));
 
   return (
-    <div className="mb-104">
+    <div className="mb-104 w-full bg-background1">
       <ul>
         <li>
           <Link to="/">albums</Link>

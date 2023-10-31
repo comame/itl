@@ -7,21 +7,25 @@ export default function Albums() {
   const tracksByAlbum = splitByAlbum(tracks);
 
   return (
-    <div>
-      <ul>
-        {tracksByAlbum.map((album) => {
-          return (
-            <li key={album.id}>
-              <Link to={`/album/${album.id}`}>
-                {album.genre + ": " + album.album + " / " + album.albumArtist}
-                <img
-                  src={albumArtworkURL(tracksByAlbum, album.id)}
-                  width={32}
-                />
-              </Link>
-            </li>
-          );
-        })}
+    <div className="w-full">
+      <ul className="grid w-full max-w-screen-screen5 grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-[16px] ml-auto mr-auto pl-8 pr-8">
+        {tracksByAlbum.map((album) => (
+          <li key={album.id} className="block">
+            <Link to={`/album/${album.id}`}>
+              <div className="w-full aspect-square [border:1px_solid_#858585]">
+                <img src={albumArtworkURL(tracksByAlbum, album.id)} />
+              </div>
+              <div>
+                <div className="overflow-hidden text-ellipsis whitespace-nowrap font-semibold text-sm">
+                  {album.album}
+                </div>
+                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
+                  {album.albumArtist}
+                </div>
+              </div>
+            </Link>
+          </li>
+        ))}
       </ul>
     </div>
   );
