@@ -121,6 +121,7 @@ func main() {
 		start, end, err := parseRangeHeader(rh)
 		if err != nil {
 			// Range のパースに失敗したら普通に返す
+			log.Println(err)
 			io.Copy(w, f)
 			return
 		}
@@ -137,8 +138,20 @@ func main() {
 			return
 		}
 
-		w.Header().Add("Content-Range", fmt.Sprintf("%d-%d/%d", start, end, len(aud)))
-		w.Write(aud)
+		if end == 0 {
+			w.Write(aud)
+			return
+		}
+
+		if end < start {
+			w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+			return
+		}
+
+		w.Header().Add("Content-Range", fmt.Sprintf("%d-%d/%d", start, end-1, len(aud)))
+		w.Header().Add("Content-Length", fmt.Sprintf("%d", end-start))
+		w.WriteHeader(http.StatusPartialContent)
+		w.Write(aud[start:end])
 	})
 	router.Get("/api/artwork/:persistent_id", func(w http.ResponseWriter, r *http.Request) {
 		p := router.Params(r)
@@ -188,7 +201,7 @@ func parseRangeHeader(v string) (int, int, error) {
 	sstr := fo[0][1]
 	estr := "0"
 
-	if len(fo[0]) == 3 {
+	if len(fo[0]) == 3 && fo[0][2] != "" {
 		estr = fo[0][2]
 	}
 

@@ -4,14 +4,14 @@ export function getClient(): client {
   const cl = (endpoint: string) => {
     const url = getEndpointURL(endpoint);
     return fetch(url, {
-      credentials: "include",
+      // credentials: "include",
     });
   };
 
   return cl;
 }
 
-function getEndpointURL(endpoint: string): string {
+export function getEndpointURL(endpoint: string): string {
   // @ts-expect-error import.meta で怒られるが気にしない
   const isDev = import.meta.env.DEV;
 

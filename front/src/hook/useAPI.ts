@@ -14,14 +14,14 @@ export function useJSONAPI<T extends (client: client) => Promise<unknown>>(
     const f = () =>
       api(getClient())
         .then((d) => {
-          store.set(api, {
+          globalStore.set(api, {
             ready: true,
             data: d,
             error: "",
           });
         })
         .catch((err) => {
-          store.set(api, {
+          globalStore.set(api, {
             ready: true,
             data: undefined,
             error: err,

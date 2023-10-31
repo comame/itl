@@ -1,10 +1,10 @@
 import { Link, Outlet } from "react-router-dom";
-import { useJSONAPI } from "./hook/useAPI";
-import { getTracks } from "./api";
+import { useQueue } from "./hook/useQueue";
+import { PlaybackControl } from "./playbackControl";
 
 export default function Index() {
-  const tracks = useJSONAPI(getTracks);
-  console.log(tracks);
+  const { queue } = useQueue();
+  console.log(queue.map((v) => v.Name).join(", "));
 
   return (
     <div>
@@ -16,6 +16,9 @@ export default function Index() {
           <Link to="/playlists">playlists</Link>
         </li>
       </ul>
+
+      <PlaybackControl />
+
       <Outlet />
     </div>
   );
