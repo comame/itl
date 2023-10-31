@@ -82,6 +82,7 @@ export function PlaybackControl() {
           ref={audioRef}
           onEnded={onEnded}
           onCanPlay={onCanPlay}
+          onError={onEnded}
           src={src}
         ></audio>
         <div className="flex justify-between pl-16 pr-16 max-w-screen-screen2 ml-auto mr-auto">

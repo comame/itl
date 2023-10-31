@@ -35,6 +35,23 @@ export function usePlayback(): ret {
     });
   });
 
+  const setupMetadata = () => {
+    const id = queueStore.get()[queueStore.getPosition()];
+    const track = tracks.find((v) => v.PersistentID === id)!;
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: track.Name,
+      artist: track.Artist,
+      album: track.Album,
+      artwork: [
+        {
+          src: trackArtworkURL(track.PersistentID),
+          type: "image/jpeg",
+        },
+      ],
+    });
+  };
+
   return {
     setQueue(...trackIDs) {
       queueStore.set(trackIDs);
@@ -58,19 +75,7 @@ export function usePlayback(): ret {
     },
     setPosition(i) {
       queueStore.setPosition(i);
-      const id = queueStore.get()[queueStore.getPosition()];
-      const track = tracks.find((v) => v.PersistentID === id)!;
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: track.Name,
-        artist: track.Artist,
-        album: track.Album,
-        artwork: [
-          {
-            src: trackArtworkURL(id),
-            type: "image/jpeg",
-          },
-        ],
-      });
+      setupMetadata();
     },
     get playing() {
       return queueStore.getPlayState();
@@ -78,6 +83,7 @@ export function usePlayback(): ret {
     resume() {
       queueStore.setPlayState(true);
       navigator.mediaSession.playbackState = "playing";
+      setupMetadata();
     },
     pause() {
       queueStore.setPlayState(false);
@@ -88,14 +94,14 @@ export function usePlayback(): ret {
 
 const queueStore = {
   _queue: [] as string[],
-  _position: -1,
+  _position: 0,
   _listeners: [] as (() => unknown)[],
   _playing: false,
 
   set(trackIDs: string[]) {
     queueStore._queue = trackIDs;
     if (queueStore._position >= queueStore._queue.length) {
-      queueStore._position = -1;
+      queueStore._position = 0;
     }
     queueStore._dispatch();
   },

@@ -50,3 +50,20 @@ export function albumArtworkURL(lib: trackByAlbum[], albumID: string): string {
   const trid = album.tracks[0].PersistentID;
   return getEndpointURL("/api/artwork/" + trid);
 }
+
+export function totalTimeInLocal(time: number): string {
+  const st = Math.trunc(time / 1000);
+  const m = Math.trunc(st / 60);
+  const s = st - 60 * m;
+
+  const ss = s < 10 ? `0${s}` : `${s}`;
+
+  return `${m}:${ss}`;
+}
+
+export function albumArtist(track: track): string {
+  if (track.AlbumArtist != "") {
+    return track.AlbumArtist;
+  }
+  return track.Artist;
+}

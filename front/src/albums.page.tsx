@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTracks } from "./hook/useTracks";
-import { albumArtworkURL, splitByAlbum } from "./library";
+import { albumArtist, albumArtworkURL, splitByAlbum } from "./library";
 
 export default function Albums() {
   const tracks = useTracks();
@@ -15,7 +15,7 @@ export default function Albums() {
               <div className="w-full aspect-square [border:1px_solid_#858585]">
                 <img
                   src={albumArtworkURL(tracksByAlbum, album.id)}
-                  className="aspect-square object-cover"
+                  className="aspect-square object-cover w-full"
                 />
               </div>
               <div>
@@ -23,7 +23,7 @@ export default function Albums() {
                   {album.album}
                 </div>
                 <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
-                  {album.albumArtist}
+                  {albumArtist(album.tracks[0])}
                 </div>
               </div>
             </Link>

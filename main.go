@@ -414,7 +414,7 @@ func parseLibraryXML(r io.Reader) ([]track, []playlist, error) {
 				switch key {
 				case "Track ID":
 					currentTrack.ID = intValue
-				case "TotalTime":
+				case "Total Time":
 					currentTrack.TotalTime = intValue
 				case "Disk Number":
 					currentTrack.DiscNumber = intValue
