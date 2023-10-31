@@ -13,7 +13,10 @@ export default function Albums() {
           <li key={album.id} className="block">
             <Link to={`/album/${album.id}`}>
               <div className="w-full aspect-square [border:1px_solid_#858585]">
-                <img src={albumArtworkURL(tracksByAlbum, album.id)} />
+                <img
+                  src={albumArtworkURL(tracksByAlbum, album.id)}
+                  className="aspect-square object-cover"
+                />
               </div>
               <div>
                 <div className="overflow-hidden text-ellipsis whitespace-nowrap font-semibold text-sm">
