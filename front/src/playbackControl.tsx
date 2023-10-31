@@ -1,9 +1,10 @@
 import { useRef, ReactEventHandler, useEffect } from "react";
-import { useQueue } from "./hook/useQueue";
+import { usePlayback } from "./hook/usePlayback";
 import { getEndpointURL } from "./api";
 
 export function PlaybackControl() {
-  const { queue, position, setPosition, playing } = useQueue();
+  const { queue, position, setPosition, playing } = usePlayback();
+
   const currentTrack = position >= 0 ? queue[position] : null;
 
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -42,7 +43,7 @@ export function PlaybackControl() {
 
   return (
     <div>
-      <audio ref={audioRef} controls onEnded={onEnded} src={src}></audio>
+      <audio ref={audioRef} onEnded={onEnded} src={src}></audio>
     </div>
   );
 }

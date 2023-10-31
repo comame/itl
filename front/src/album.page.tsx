@@ -1,5 +1,5 @@
 import { useParam } from "./hook/useParam";
-import { useQueue } from "./hook/useQueue";
+import { usePlayback } from "./hook/usePlayback";
 import { useTracks } from "./hook/useTracks";
 import { splitByAlbum } from "./library";
 
@@ -9,7 +9,7 @@ export default function Album() {
   const tracks = useTracks();
   const tracksByAlbum = splitByAlbum(tracks);
 
-  const { addQueue, setPosition } = useQueue();
+  const { addQueue, setPosition, resume } = usePlayback();
 
   const album = tracksByAlbum.find((v) => v.id == p["id"]);
   if (!album) {
@@ -19,6 +19,7 @@ export default function Album() {
   const onClickTrack = (id: string) => {
     addQueue(id);
     setPosition(0);
+    resume();
   };
 
   return (

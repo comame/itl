@@ -1,9 +1,9 @@
 import { Link, Outlet } from "react-router-dom";
-import { useQueue } from "./hook/useQueue";
+import { usePlayback } from "./hook/usePlayback";
 import { PlaybackControl } from "./playbackControl";
 
 export default function Index() {
-  const { queue } = useQueue();
+  const { queue } = usePlayback();
   console.log(queue.map((v) => v.Name).join(", "));
 
   return (

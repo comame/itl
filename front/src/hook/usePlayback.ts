@@ -1,6 +1,8 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { track } from "../type/track";
 import { useTracks } from "./useTracks";
+import { albumArtworkURL } from "../library";
+import { getEndpointURL } from "../api";
 
 type ret = {
   setQueue: (...trackIDs: string[]) => void;
@@ -13,10 +15,25 @@ type ret = {
   pause: () => void;
 };
 
-export function useQueue(): ret {
+export function usePlayback(): ret {
   useSyncExternalStore(queueStore.subscribe, queueStore.getSnapshot);
 
   const tracks = useTracks();
+
+  useEffect(() => {
+    navigator.mediaSession.setActionHandler("pause", () => {
+      queueStore.setPlayState(false);
+      navigator.mediaSession.playbackState = "paused";
+    });
+    navigator.mediaSession.setActionHandler("stop", () => {
+      queueStore.setPlayState(false);
+      navigator.mediaSession.playbackState = "paused";
+    });
+    navigator.mediaSession.setActionHandler("play", () => {
+      queueStore.setPlayState(true);
+      navigator.mediaSession.playbackState = "playing";
+    });
+  });
 
   return {
     setQueue(...trackIDs) {
@@ -41,15 +58,30 @@ export function useQueue(): ret {
     },
     setPosition(i) {
       queueStore.setPosition(i);
+      const id = queueStore.get()[queueStore.getPosition()];
+      const track = tracks.find((v) => v.PersistentID === id)!;
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: track.Name,
+        artist: track.Artist,
+        album: track.Album,
+        artwork: [
+          {
+            src: getEndpointURL("/api/artwork/" + track.PersistentID),
+            type: "image/jpeg",
+          },
+        ],
+      });
     },
     get playing() {
       return queueStore.getPlayState();
     },
     resume() {
       queueStore.setPlayState(true);
+      navigator.mediaSession.playbackState = "playing";
     },
     pause() {
       queueStore.setPlayState(false);
+      navigator.mediaSession.playbackState = "paused";
     },
   };
 }
@@ -92,6 +124,7 @@ const queueStore = {
   },
   setPlayState(b: boolean) {
     queueStore._playing = b;
+    queueStore._dispatch();
   },
 
   subscribe(listener: () => unknown) {
