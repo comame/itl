@@ -11,11 +11,12 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
+	"os/exec"
 	"path"
 	"strconv"
 
 	"github.com/comame/router-go"
-	"github.com/dhowden/tag"
 	"github.com/hirochachacha/go-smb2"
 )
 
@@ -78,10 +79,10 @@ func main() {
 
 		var track *track
 		for _, tr := range tracks {
-			if tr.PersistentID != persistentID {
-				continue
+			if tr.PersistentID == persistentID {
+				track = &tr
+				break
 			}
-			track = &tr
 		}
 
 		if track == nil {
@@ -115,10 +116,10 @@ func main() {
 
 		var track *track
 		for _, tr := range tracks {
-			if tr.PersistentID != persistentID {
-				continue
+			if tr.PersistentID == persistentID {
+				track = &tr
+				break
 			}
-			track = &tr
 		}
 
 		if track == nil {
@@ -141,24 +142,83 @@ func main() {
 		}
 		defer f.Close()
 
-		m, err := tag.ReadFrom(f)
+		pf, err := extractArtworks(fs, *track)
 		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		if m.Picture() == nil {
+			log.Println("ext: " + err.Error())
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
+		defer pf.Close()
 
-		w.Header().Set("Content-Type", m.Picture().MIMEType)
-		w.Write(m.Picture().Data)
+		io.Copy(w, pf)
 	})
 
 	log.Println("Start http://localhost:8080/")
-	http.ListenAndServe(":8080", router.Handler())
+	http.ListenAndServe(":8080", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, ok := os.LookupEnv("DEV")
+		if ok {
+			allowCORSForDev(w)
+		}
+		router.Handler().ServeHTTP(w, r)
+	}))
+}
+
+func extractArtworks(fs *smb2.Share, track track) (io.ReadCloser, error) {
+	loc, err := convLocation(track.Locaton)
+	if err != nil {
+		return nil, err
+	}
+
+	afpath := track.PersistentID + path.Ext(loc)
+
+	// とりあえず初回見てみて、存在すればそのまま返す
+	fpf, _ := os.Open(".ar/" + afpath + ".jpg")
+	if fpf != nil {
+		return fpf, nil
+	}
+
+	f, err := fs.Open(loc)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	// 作業フォルダを作り、
+	os.MkdirAll(".ar", 0777)
+
+	// オーディオファイルを開き、もしなければダウンロードし、
+	af, err := os.Open(".ar/" + afpath)
+	if errors.Is(err, os.ErrNotExist) {
+		cf, err := os.Create(".ar/" + afpath)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := io.Copy(cf, f); err != nil {
+			return nil, err
+		}
+		if err := cf.Sync(); err != nil {
+			return nil, err
+		}
+		af = cf
+	} else if err != nil {
+		return nil, err
+	}
+	defer af.Close()
+
+	// エラーを握りつぶす。もしここで失敗していたら、次の os.Open でコケるはず
+	exec.Command("ffmpeg", "-i", ".ar/"+afpath, "-an", "-c:v", "copy", ".ar/"+afpath+".jpg").Run()
+
+	pf, err := os.Open(".ar/" + afpath + ".jpg")
+	if err != nil {
+		return nil, err
+	}
+
+	return pf, nil
+}
+
+func allowCORSForDev(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 }
 
 func convLocation(p string) (string, error) {

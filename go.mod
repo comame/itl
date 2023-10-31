@@ -4,7 +4,6 @@ module test
 
 require (
 	github.com/comame/router-go v1.3.0
-	github.com/dhowden/tag v0.0.0-20230630033851-978a0926ee25
 	github.com/hirochachacha/go-smb2 v1.1.0
 )
 

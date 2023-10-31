@@ -1,7 +1,5 @@
 github.com/comame/router-go v1.3.0 h1:Rtb++ZMbKbwxfvHB9jhaoy+P1qHVYmUCIpL892TicVE=
 github.com/comame/router-go v1.3.0/go.mod h1:30KnxJAAZnoG9zFHVDuWFsmT2fKZXjX7hrQuhZBz+IY=
-github.com/dhowden/tag v0.0.0-20230630033851-978a0926ee25 h1:simG0vMYFvNriGhaaat7QVVkaVkXzvqcohaBoLZl9Hg=
-github.com/dhowden/tag v0.0.0-20230630033851-978a0926ee25/go.mod h1:Z3Lomva4pyMWYezjMAU5QWRh0p1VvO4199OHlFnyKkM=
 github.com/geoffgarside/ber v1.1.0 h1:qTmFG4jJbwiSzSXoNJeHcOprVzZ8Ulde2Rrrifu5U9w=
 github.com/geoffgarside/ber v1.1.0/go.mod h1:jVPKeCbj6MvQZhwLYsGwaGI52oUorHoHKNecGT85ZCc=
 github.com/hirochachacha/go-smb2 v1.1.0 h1:b6hs9qKIql9eVXAiN0M2wSFY5xnhbHAQoCwRKbaRTZI=
