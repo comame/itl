@@ -56,7 +56,7 @@ func main() {
 		panic(err)
 	}
 
-	router.Get("/tracks", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/api/tracks", func(w http.ResponseWriter, r *http.Request) {
 		js, err := json.Marshal(tracks)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -64,7 +64,7 @@ func main() {
 		}
 		w.Write(js)
 	})
-	router.Get("/playlists", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/api/playlists", func(w http.ResponseWriter, r *http.Request) {
 		js, err := json.Marshal(playlists)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -72,7 +72,7 @@ func main() {
 		}
 		w.Write(js)
 	})
-	router.Get("/track/:persistent_id", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/api/track/:persistent_id", func(w http.ResponseWriter, r *http.Request) {
 		p := router.Params(r)
 		persistentID := p["persistent_id"]
 
@@ -109,7 +109,7 @@ func main() {
 
 		io.Copy(w, f)
 	})
-	router.Get("/artwork/:persistent_id", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/api/artwork/:persistent_id", func(w http.ResponseWriter, r *http.Request) {
 		p := router.Params(r)
 		persistentID := p["persistent_id"]
 
