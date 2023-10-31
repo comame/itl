@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"mime"
@@ -14,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
 	"strconv"
 
 	"github.com/comame/router-go"
@@ -107,8 +109,36 @@ func main() {
 
 		typ := mime.TypeByExtension(path.Ext(loc))
 		w.Header().Set("Content-Type", typ)
+		w.Header().Set("Accept-Ranges", "bytes")
 
-		io.Copy(w, f)
+		rh := r.Header.Get("Range")
+		if rh == "" {
+			// Range でなければ普通に返す
+			io.Copy(w, f)
+			return
+		}
+
+		start, end, err := parseRangeHeader(rh)
+		if err != nil {
+			// Range のパースに失敗したら普通に返す
+			io.Copy(w, f)
+			return
+		}
+
+		aud, err := io.ReadAll(f)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if len(aud) < end {
+			w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+			return
+		}
+
+		w.Header().Add("Content-Range", fmt.Sprintf("%d-%d/%d", start, end, len(aud)))
+		w.Write(aud)
 	})
 	router.Get("/api/artwork/:persistent_id", func(w http.ResponseWriter, r *http.Request) {
 		p := router.Params(r)
@@ -126,21 +156,6 @@ func main() {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-
-		loc, err := convLocation(track.Locaton)
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		f, err := fs.Open(loc)
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		defer f.Close()
 
 		pf, err := extractArtworks(fs, *track)
 		if err != nil {
@@ -161,6 +176,32 @@ func main() {
 		}
 		router.Handler().ServeHTTP(w, r)
 	}))
+}
+
+func parseRangeHeader(v string) (int, int, error) {
+	rp := regexp.MustCompile(`^bytes=(\d+)-(\d+)?$`)
+	fo := rp.FindAllStringSubmatch(v, 2)
+	if fo == nil {
+		return 0, 0, errors.New("unsupported or invalid format of range header")
+	}
+
+	sstr := fo[0][1]
+	estr := "0"
+
+	if len(fo[0]) == 3 {
+		estr = fo[0][2]
+	}
+
+	sint, err := strconv.ParseInt(sstr, 10, 64)
+	if err != nil {
+		return 0, 0, err
+	}
+	eint, err := strconv.ParseInt(estr, 10, 64)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return int(sint), int(eint), nil
 }
 
 func extractArtworks(fs *smb2.Share, track track) (io.ReadCloser, error) {
