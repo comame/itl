@@ -13,4 +13,5 @@ export type track = {
   Album: string;
   Genre: string;
   Locaton: string;
+  Kind: string;
 };

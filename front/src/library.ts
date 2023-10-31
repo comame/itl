@@ -67,3 +67,10 @@ export function albumArtist(track: track): string {
   }
   return track.Artist;
 }
+
+export function isChromeIncompatible(track: track): boolean {
+  if (track.Kind === "Apple Losslessオーディオファイル") {
+    return true;
+  }
+  return false;
+}

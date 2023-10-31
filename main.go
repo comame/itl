@@ -300,6 +300,7 @@ type track struct {
 	Album        string
 	Genre        string
 	Locaton      string
+	Kind         string
 }
 
 type playlist struct {
@@ -440,6 +441,8 @@ func parseLibraryXML(r io.Reader) ([]track, []playlist, error) {
 					currentTrack.Genre = strToken
 				case "Location":
 					currentTrack.Locaton = strToken
+				case "Kind":
+					currentTrack.Kind = strToken
 				}
 			}
 

@@ -1,7 +1,11 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { track } from "../type/track";
 import { useTracks } from "./useTracks";
-import { albumArtworkURL, trackArtworkURL } from "../library";
+import {
+  albumArtworkURL,
+  isChromeIncompatible,
+  trackArtworkURL,
+} from "../library";
 import { getEndpointURL } from "../api";
 
 type ret = {
@@ -54,9 +58,17 @@ export function usePlayback(): ret {
 
   return {
     setQueue(...trackIDs) {
+      trackIDs = trackIDs.filter(
+        (v) =>
+          !isChromeIncompatible(tracks.find((tf) => tf.PersistentID === v)!)
+      );
       queueStore.set(trackIDs);
     },
     addQueue(...trackIDs) {
+      trackIDs = trackIDs.filter(
+        (v) =>
+          !isChromeIncompatible(tracks.find((tf) => tf.PersistentID === v)!)
+      );
       for (const id of trackIDs) {
         queueStore.add(id);
       }

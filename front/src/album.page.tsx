@@ -4,6 +4,7 @@ import { useTracks } from "./hook/useTracks";
 import {
   albumArtist,
   albumArtworkURL,
+  isChromeIncompatible,
   splitByAlbum,
   totalTimeInLocal,
 } from "./library";
@@ -73,14 +74,14 @@ export default function Album() {
               className="[line-height:2] odd:bg-background2 cursor-pointer hover:bg-background2-hover active:bg-background2-press"
             >
               <td>{tr.TrackNumber}</td>
-              <td>{false && <pixiv-icon name="24/Next" scale="1" />}</td>
-              <td className="align-top whitespace-nowrap overflow-x-hidden text-ellipsis">
+              <td>{isChromeIncompatible(tr) && "!!"}</td>
+              <td className="whitespace-nowrap overflow-x-hidden text-ellipsis">
                 {tr.Name}
               </td>
-              <td className="hidden screen2:table-cell align-top whitespace-nowrap overflow-x-hidden text-ellipsis pl-16 pr-16">
+              <td className="hidden screen2:table-cell whitespace-nowrap overflow-x-hidden text-ellipsis pl-16 pr-16">
                 {tr.Artist}
               </td>
-              <td className="hidden screen2:table-cell align-top whitespace-nowrap overflow-x-hidden text-ellipsis">
+              <td className="hidden screen2:table-cell whitespace-nowrap overflow-x-hidden text-ellipsis">
                 {totalTimeInLocal(tr.TotalTime)}
               </td>
             </tr>
