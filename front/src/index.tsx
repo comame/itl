@@ -12,6 +12,8 @@ import Playlist from "./playlist.page";
 import Album from "./album.page";
 import { TracksContext } from "./hook/useTracks";
 
+import "./index.css";
+
 function Page() {
   const router = createBrowserRouter([
     {
