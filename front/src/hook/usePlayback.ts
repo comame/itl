@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { track } from "../type/track";
 import { useTracks } from "./useTracks";
-import { albumArtworkURL } from "../library";
+import { albumArtworkURL, trackArtworkURL } from "../library";
 import { getEndpointURL } from "../api";
 
 type ret = {
@@ -66,7 +66,7 @@ export function usePlayback(): ret {
         album: track.Album,
         artwork: [
           {
-            src: getEndpointURL("/api/artwork/" + track.PersistentID),
+            src: trackArtworkURL(id),
             type: "image/jpeg",
           },
         ],

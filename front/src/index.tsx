@@ -12,7 +12,21 @@ import Playlist from "./playlist.page";
 import Album from "./album.page";
 import { TracksContext } from "./hook/useTracks";
 
+import "@charcoal-ui/icons";
+
 import "./index.css";
+
+declare global {
+  export namespace JSX {
+    interface IntrinsicElements {
+      "pixiv-icon": {
+        name: string;
+        scale: 1 | 2 | 3 | "1" | "2" | "3";
+        "unsafe-non-guideline-scale"?: number | string;
+      };
+    }
+  }
+}
 
 function Page() {
   const router = createBrowserRouter([

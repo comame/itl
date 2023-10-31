@@ -7,7 +7,7 @@ export default function Index() {
   console.log(queue.map((v) => v.Name).join(", "));
 
   return (
-    <div>
+    <div className="mb-104">
       <ul>
         <li>
           <Link to="/">albums</Link>
@@ -17,9 +17,9 @@ export default function Index() {
         </li>
       </ul>
 
-      <PlaybackControl />
-
       <Outlet />
+
+      <PlaybackControl />
     </div>
   );
 }

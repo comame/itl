@@ -35,6 +35,10 @@ export function splitByAlbum(tracks: track[]): trackByAlbum[] {
   return ta;
 }
 
+export function trackArtworkURL(id: string): string {
+  return getEndpointURL("/api/artwork/" + id);
+}
+
 export function albumArtworkURL(lib: trackByAlbum[], albumID: string): string {
   const album = lib.find((v) => v.id === albumID);
   if (!album) {
