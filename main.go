@@ -2,11 +2,13 @@ package main
 
 import (
 	"bufio"
+	"embed"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"mime"
 	"net"
@@ -22,6 +24,9 @@ import (
 	"github.com/comame/router-go"
 	"github.com/hirochachacha/go-smb2"
 )
+
+//go:embed front/dist
+var distFs embed.FS
 
 func main() {
 	conn, err := net.Dial("tcp", "d1.comame.dev:445") // めんどいのでハードコード
@@ -43,13 +48,13 @@ func main() {
 	}
 	defer s.Logoff()
 
-	fs, err := s.Mount("iTunes")
+	smbfs, err := s.Mount("iTunes")
 	if err != nil {
 		panic(err)
 	}
-	defer fs.Umount()
+	defer smbfs.Umount()
 
-	flib, err := fs.Open("./iTunes Music Library.xml")
+	flib, err := smbfs.Open("./iTunes Music Library.xml")
 	if err != nil {
 		panic(err)
 	}
@@ -100,7 +105,7 @@ func main() {
 			return
 		}
 
-		f, err := fs.Open(loc)
+		f, err := smbfs.Open(loc)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -173,7 +178,7 @@ func main() {
 			return
 		}
 
-		pf, err := extractArtworks(fs, *track)
+		pf, err := extractArtworks(smbfs, *track)
 		if err != nil {
 			log.Println("ext: " + err.Error())
 			w.WriteHeader(http.StatusNotFound)
@@ -183,6 +188,14 @@ func main() {
 
 		w.WriteHeader(http.StatusOK)
 		io.Copy(w, pf)
+	})
+	router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+		sub, err := fs.Sub(distFs, "front/dist")
+		if err != nil {
+			panic(err)
+		}
+		srv := http.FileServer(http.FS(sub))
+		srv.ServeHTTP(w, r)
 	})
 
 	log.Println("Start http://localhost:8080/")
