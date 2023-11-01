@@ -1,7 +1,7 @@
 import React from "react";
 import { usePlayback } from "./hook/usePlayback";
 import { useTracks } from "./hook/useTracks";
-import { isChromeIncompatible, totalTimeInLocal } from "./library";
+import { albumArtist, isChromeIncompatible, totalTimeInLocal } from "./library";
 import { track } from "./type/track";
 import { useOffline } from "./hook/useOffline";
 
@@ -74,7 +74,7 @@ export function TrackList({ tracks, showAlbum, controlQueue }: props) {
               {tr.Name}
             </td>
             <td className="hidden screen2:table-cell whitespace-nowrap overflow-x-hidden text-ellipsis pl-16 pr-16">
-              {showAlbum ? tr.Album + ", " + tr.AlbumArtist : tr.Artist}
+              {showAlbum ? tr.Album + ", " + albumArtist(tr) : tr.Artist}
             </td>
             <td className="hidden screen2:table-cell whitespace-nowrap overflow-x-hidden text-ellipsis">
               {totalTimeInLocal(tr.TotalTime)}
