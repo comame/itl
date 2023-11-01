@@ -19,6 +19,7 @@ import { PlaylistsContext, TracksContext } from "./hook/useTracks";
 import "@charcoal-ui/icons";
 
 import "./index.css";
+import Settings from "./settings.page";
 
 declare global {
   export namespace JSX {
@@ -55,6 +56,10 @@ function Page() {
           path: "album/:id",
           element: <Album />,
           loader: mapParamToLoader,
+        },
+        {
+          path: "settings",
+          element: <Settings />,
         },
       ],
     },

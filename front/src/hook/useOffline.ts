@@ -22,7 +22,7 @@ export function useOffline(): {
           store.saved = ids;
           store.dispath();
         });
-    }, 10000);
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
