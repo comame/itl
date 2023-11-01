@@ -1,7 +1,7 @@
 import { getEndpointURL } from "./api";
 import { track } from "./type/track";
 
-type trackByAlbum = {
+export type trackByAlbum = {
   id: string;
   album: string;
   albumArtist: string;
@@ -73,4 +73,14 @@ export function isChromeIncompatible(track: track): boolean {
     return true;
   }
   return false;
+}
+
+export function getGenres(tracks: track[]): string[] {
+  const g = new Set<string>();
+
+  for (const t of tracks) {
+    g.add(t.Genre);
+  }
+
+  return Array.from(g);
 }
