@@ -8,6 +8,7 @@ import {
   trackByAlbum,
 } from "./library";
 import React, { useState } from "react";
+import { GlobalNavigation } from "./globalNavigation";
 
 export default function Albums() {
   const tracks = useTracks();
@@ -18,23 +19,12 @@ export default function Albums() {
 
   return (
     <div className="w-full">
-      <div className="mb-16 ml-8">
-        <Link to="/" className="inline-block font-bold text-2xl">
-          アルバム
-        </Link>
-        <Link
-          to="/playlists"
-          className="pl-16 inline-block text-2xl text-text2"
-        >
-          プレイリスト
-        </Link>
-      </div>
       <select
         value={selectedGenre}
         onChange={(e) => {
           selectGenre(e.currentTarget.value);
         }}
-        className="mb-16 ml-4"
+        className="mb-16 ml-16"
       >
         <option value="">ジャンルを選択...</option>
         {genres.map((g) => (

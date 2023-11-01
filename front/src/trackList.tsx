@@ -3,6 +3,7 @@ import { usePlayback } from "./hook/usePlayback";
 import { useTracks } from "./hook/useTracks";
 import { isChromeIncompatible, totalTimeInLocal } from "./library";
 import { track } from "./type/track";
+import { useOffline } from "./hook/useOffline";
 
 type props = {
   tracks: track[];
@@ -61,7 +62,13 @@ export function TrackList({ tracks, showAlbum, controlQueue }: props) {
           >
             <td>{tr.TrackNumber}</td>
             <td>
-              {indicator(tr, currentTrack, controlQueue ?? false, position, i)}
+              <Indicator
+                track={tr}
+                currentTrack={currentTrack}
+                isQueue={controlQueue ?? false}
+                queuePosition={position}
+                listIndex={i}
+              />
             </td>
             <td className="whitespace-nowrap overflow-x-hidden text-ellipsis">
               {tr.Name}
@@ -79,13 +86,21 @@ export function TrackList({ tracks, showAlbum, controlQueue }: props) {
   );
 }
 
-function indicator(
-  track: track,
-  currentTrack: track | undefined,
-  isQueue: boolean,
-  queuePosition: number,
-  listIndex: number
-): string {
+function Indicator({
+  track,
+  currentTrack,
+  isQueue,
+  queuePosition,
+  listIndex,
+}: {
+  track: track;
+  currentTrack: track | undefined;
+  isQueue: boolean;
+  queuePosition: number;
+  listIndex: number;
+}) {
+  const { cachedTrackIDs } = useOffline();
+
   if (isChromeIncompatible(track)) {
     return "!!";
   }
@@ -93,6 +108,11 @@ function indicator(
     if (track.PersistentID === currentTrack?.PersistentID) {
       return "▶";
     }
+
+    if (cachedTrackIDs.includes(track.PersistentID)) {
+      return "✓";
+    }
+
     return "";
   }
 

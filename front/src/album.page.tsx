@@ -1,3 +1,4 @@
+import { useOffline } from "./hook/useOffline";
 import { useParam } from "./hook/useParam";
 import { usePlayback } from "./hook/usePlayback";
 import { useTracks } from "./hook/useTracks";
@@ -29,6 +30,14 @@ export default function Album() {
     resume();
   };
 
+  const { save } = useOffline();
+
+  const onDownloadClick = () => {
+    for (const tr of album.tracks) {
+      save(tr.PersistentID);
+    }
+  };
+
   const altrs = album.tracks;
   altrs.sort((a, b) => {
     if (a.DiscNumber != b.DiscNumber) {
@@ -54,6 +63,9 @@ export default function Album() {
         <div>
           <p className="text-lg font-semibold">{album.album}</p>
           <p>{albumArtist(album.tracks[0])}</p>
+          <button onClick={onDownloadClick}>
+            <pixiv-icon name="24/DownloadAlt" scale="2" />
+          </button>
         </div>
       </div>
       <div className="mt-16 pr-8 pl-8 w-full">

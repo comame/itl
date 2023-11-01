@@ -12,14 +12,6 @@ export default function Playlists() {
 
   return (
     <div className="w-full">
-      <div className="mb-16 ml-8">
-        <Link to="/" className="inline-block text-2xl text-text2">
-          アルバム
-        </Link>
-        <Link to="/playlists" className="pl-16 inline-block text-2xl font-bold">
-          プレイリスト
-        </Link>
-      </div>
       <ul className="grid w-full max-w-screen-screen5 grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-[16px] ml-auto mr-auto pl-8 pr-8">
         {playlists
           .filter((pl) => pl.ItemTrackIDs !== null)

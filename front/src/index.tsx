@@ -1,6 +1,10 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createHashRouter,
+  RouterProvider,
+} from "react-router-dom";
 
 import { useJSONAPI } from "./hook/useAPI";
 import { getPlaylists, getTracks } from "./api";
@@ -29,13 +33,13 @@ declare global {
 }
 
 function Page() {
-  const router = createBrowserRouter([
+  const router = createHashRouter([
     {
-      path: "/",
+      path: "",
       element: <Index />,
       children: [
         {
-          path: "/",
+          path: "",
           element: <Albums />,
         },
         {
@@ -43,12 +47,12 @@ function Page() {
           element: <Playlists />,
         },
         {
-          path: "/playlist/:id",
+          path: "playlist/:id",
           element: <Playlist />,
           loader: mapParamToLoader,
         },
         {
-          path: "/album/:id",
+          path: "album/:id",
           element: <Album />,
           loader: mapParamToLoader,
         },
@@ -81,3 +85,9 @@ function mapParamToLoader({ params }: any): Record<string, string> {
 }
 
 createRoot(document.getElementById("app")!).render(<Page />);
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js", {
+    scope: "/",
+  });
+}

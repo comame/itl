@@ -115,6 +115,7 @@ func main() {
 		rh := r.Header.Get("Range")
 		if rh == "" {
 			// Range でなければ普通に返す
+			w.WriteHeader(http.StatusOK)
 			io.Copy(w, f)
 			return
 		}
@@ -123,6 +124,7 @@ func main() {
 		if err != nil {
 			// Range のパースに失敗したら普通に返す
 			log.Println(err)
+			w.WriteHeader(http.StatusOK)
 			io.Copy(w, f)
 			return
 		}
@@ -179,6 +181,7 @@ func main() {
 		}
 		defer pf.Close()
 
+		w.WriteHeader(http.StatusOK)
 		io.Copy(w, pf)
 	})
 
