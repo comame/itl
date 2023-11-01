@@ -17,6 +17,7 @@ import (
 	"path"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/comame/router-go"
 	"github.com/hirochachacha/go-smb2"
@@ -278,6 +279,7 @@ func allowCORSForDev(w http.ResponseWriter) {
 func convLocation(p string) (string, error) {
 	prefix := "file://localhost/C:/Users/comame/Music/iTunes"
 	p = "." + p[len(prefix):]
+	p = strings.ReplaceAll(p, "+", "%2B")
 	p, err := url.QueryUnescape(p)
 	if err != nil {
 		return "", err
@@ -417,7 +419,7 @@ func parseLibraryXML(r io.Reader) ([]track, []playlist, error) {
 					currentTrack.ID = intValue
 				case "Total Time":
 					currentTrack.TotalTime = intValue
-				case "Disk Number":
+				case "Disc Number":
 					currentTrack.DiscNumber = intValue
 				case "Disc Count":
 					currentTrack.DiscCount = intValue

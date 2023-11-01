@@ -9,8 +9,9 @@ import {
 import { getEndpointURL } from "../api";
 
 type ret = {
-  setQueue: (...trackIDs: string[]) => void;
   addQueue: (...trackIDs: string[]) => void;
+  removeFromQueue: (position: number) => void;
+  clearQueue: () => void;
   setPosition: (i: number) => void;
   queue: track[];
   position: number;
@@ -57,13 +58,6 @@ export function usePlayback(): ret {
   };
 
   return {
-    setQueue(...trackIDs) {
-      trackIDs = trackIDs.filter(
-        (v) =>
-          !isChromeIncompatible(tracks.find((tf) => tf.PersistentID === v)!)
-      );
-      queueStore.set(trackIDs);
-    },
     addQueue(...trackIDs) {
       trackIDs = trackIDs.filter(
         (v) =>
@@ -100,6 +94,30 @@ export function usePlayback(): ret {
     pause() {
       queueStore.setPlayState(false);
       navigator.mediaSession.playbackState = "paused";
+    },
+    removeFromQueue(p: number) {
+      const curp = queueStore._position;
+
+      queueStore._queue.splice(p, 1);
+
+      if (curp > p) {
+        queueStore._position -= 1;
+      }
+
+      if (queueStore._queue.length === 0) {
+        queueStore._position = 0;
+        queueStore.setPlayState(false);
+        navigator.mediaSession.playbackState = "paused";
+      }
+
+      queueStore._dispatch();
+    },
+    clearQueue() {
+      queueStore._queue = [];
+      queueStore._position = 0;
+      queueStore.setPlayState(false);
+      navigator.mediaSession.playbackState = "paused";
+      queueStore._dispatch();
     },
   };
 }

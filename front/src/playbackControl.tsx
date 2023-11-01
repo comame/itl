@@ -1,28 +1,20 @@
-import { useRef, ReactEventHandler, useEffect } from "react";
+import { useRef, ReactEventHandler, useEffect, useState } from "react";
 import { usePlayback } from "./hook/usePlayback";
 import { getEndpointURL } from "./api";
 import { trackArtworkURL } from "./library";
+import { TrackList } from "./trackList";
 
 export function PlaybackControl() {
-  const { queue, position, setPosition, playing, pause, resume } =
+  const [showControls, setShowControls] = useState(false);
+  const [volume, setVolume] = useState(20);
+  const [volumeWarned, setVolumeWarned] = useState(false);
+
+  const { queue, position, setPosition, playing, pause, resume, clearQueue } =
     usePlayback();
 
   const currentTrack = position >= 0 ? queue[position] : null;
 
   const audioRef = useRef<HTMLAudioElement>(null);
-
-  // 音量の初期値
-  useEffect(() => {
-    function f() {
-      const c = audioRef.current;
-      if (!c) {
-        setTimeout(f, 0);
-        return;
-      }
-      c.volume = 0.1;
-    }
-    f();
-  }, []);
 
   useEffect(() => {
     if (playing) {
@@ -40,7 +32,10 @@ export function PlaybackControl() {
     }
   };
 
-  const onClickPlayPauseButton = () => {
+  const onClickPlayPauseButton = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    e.stopPropagation(); // setShowControls を発火させないために呼ぶ
     if (playing) {
       pause();
     } else {
@@ -56,6 +51,37 @@ export function PlaybackControl() {
     }
   };
 
+  const toggleShowControl = () => {
+    setShowControls((v) => !v);
+  };
+
+  const closeShowControl = () => {
+    setShowControls(false);
+  };
+
+  const onClearQueue = () => {
+    clearQueue();
+  };
+
+  const changeVolume = (volume: number) => {
+    if (!volumeWarned && volume > 30) {
+      const ok = confirm("音量を上げますか？");
+      if (!ok) {
+        return;
+      }
+      setVolumeWarned(true);
+    }
+    setVolume(volume);
+  };
+
+  useEffect(() => {
+    const e = audioRef.current;
+    if (!e) {
+      return;
+    }
+    e.volume = volume / 100;
+  }, [volume]);
+
   const src = currentTrack
     ? getEndpointURL("/api/track/" + currentTrack.PersistentID)
     : undefined;
@@ -65,6 +91,38 @@ export function PlaybackControl() {
 
   return (
     <>
+      {showControls && (
+        <>
+          <div
+            className="fixed top-0 left-0 bg-[rgba(0,0,0,0.6)] w-full h-[calc(30vh-128px)]"
+            onClick={closeShowControl}
+          ></div>
+          <div className="fixed bottom-64 left-0 w-full h-[calc(70vh+64px)] bg-background2 overflow-hidden">
+            <div className="text-right max-w-screen-screen3 h-40 ml-auto mr-auto pl-16 pr-16 pt-8 ">
+              <button className="font-bold " onClick={onClearQueue}>
+                キューを削除
+              </button>
+            </div>
+            <div className="min-w-[350px] max-w-screen-screen3 h-[calc(100%-80px)] ml-auto mr-auto pl-16 pr-16 pt-8 overflow-y-auto">
+              <TrackList tracks={queue} showAlbum controlQueue />
+            </div>
+            <div className="max-w-screen-screen3 h-40 ml-auto mr-auto pl-16 pr-16 pt-8">
+              <label className="inline-block w-col-span-1">Volume</label>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value={volume}
+                onChange={(e) => {
+                  changeVolume(Number.parseInt(e.currentTarget.value, 10));
+                }}
+                className="w-[calc(100%-80px)] align-middle"
+              />
+            </div>
+          </div>
+        </>
+      )}
       <div
         className="w-full h-64 bg-background2 fixed bottom-0 left-0"
         style={
@@ -77,6 +135,7 @@ export function PlaybackControl() {
                 backgroundPositionY: "50%",
               }
         }
+        onClick={toggleShowControl}
       >
         <audio
           ref={audioRef}
@@ -86,7 +145,7 @@ export function PlaybackControl() {
           src={src}
         ></audio>
         <div className="flex justify-between pl-16 pr-16 max-w-screen-screen2 ml-auto mr-auto">
-          <div className="flex flex-col justify-center max-w-[600px]">
+          <div className="flex flex-col justify-center max-w-[600px] cursor-pointer">
             {currentTrack && (
               <>
                 <span className="font-semibold text-lg whitespace-nowrap overflow-hidden overflow-ellipsis">
@@ -99,7 +158,10 @@ export function PlaybackControl() {
             )}
             {!currentTrack && "曲を選択してください"}
           </div>
-          <button className="block pt-8 pb-8" onClick={onClickPlayPauseButton}>
+          <button
+            className="block pt-8 pb-8"
+            onClickCapture={onClickPlayPauseButton}
+          >
             {currentTrack &&
               (playing ? (
                 <pixiv-icon name="24/Pause" scale="2" />

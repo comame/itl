@@ -8,6 +8,7 @@ import {
   splitByAlbum,
   totalTimeInLocal,
 } from "./library";
+import { TrackList } from "./trackList";
 
 export default function Album() {
   const p = useParam();
@@ -15,23 +16,26 @@ export default function Album() {
   const tracks = useTracks();
   const tracksByAlbum = splitByAlbum(tracks);
 
-  const { addQueue, setPosition, resume } = usePlayback();
+  const { addQueue, resume } = usePlayback();
 
   const album = tracksByAlbum.find((v) => v.id == p["id"]);
   if (!album) {
     return <div>Not Found</div>;
   }
 
-  const onClickTrack = (id: string) => {
-    addQueue(id);
-    resume();
-  };
-
   const onClickArtwork = () => {
     const ids = album.tracks.map((v) => v.PersistentID);
     addQueue(...ids);
     resume();
   };
+
+  const altrs = album.tracks;
+  altrs.sort((a, b) => {
+    if (a.DiscNumber != b.DiscNumber) {
+      return a.DiscNumber - b.DiscNumber;
+    }
+    return a.TrackNumber - b.TrackNumber;
+  });
 
   return (
     <div className="min-w-[350px] max-w-screen-screen3 ml-auto mr-auto pl-16 pr-16">
@@ -52,42 +56,9 @@ export default function Album() {
           <p>{albumArtist(album.tracks[0])}</p>
         </div>
       </div>
-      <table className="mt-16 border-collapse w-full pr-8 pl-8 table-fixed">
-        <thead>
-          <tr className="[line-height:2]">
-            <th className="w-[2em]"></th>
-            <th className="w-[2em]"></th>
-            <th className="text-left">名前</th>
-            <th className="hidden screen2:table-cell text-left pl-16 pr-16">
-              アーティスト
-            </th>
-            <th className="hidden screen2:table-cell w-[4em] text-left">
-              時間
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {album.tracks.map((tr) => (
-            <tr
-              key={tr.PersistentID}
-              onClick={() => onClickTrack(tr.PersistentID)}
-              className="[line-height:2] odd:bg-background2 cursor-pointer hover:bg-background2-hover active:bg-background2-press"
-            >
-              <td>{tr.TrackNumber}</td>
-              <td>{isChromeIncompatible(tr) && "!!"}</td>
-              <td className="whitespace-nowrap overflow-x-hidden text-ellipsis">
-                {tr.Name}
-              </td>
-              <td className="hidden screen2:table-cell whitespace-nowrap overflow-x-hidden text-ellipsis pl-16 pr-16">
-                {tr.Artist}
-              </td>
-              <td className="hidden screen2:table-cell whitespace-nowrap overflow-x-hidden text-ellipsis">
-                {totalTimeInLocal(tr.TotalTime)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="mt-16 pr-8 pl-8 w-full">
+        <TrackList tracks={altrs} />
+      </div>
     </div>
   );
 }
