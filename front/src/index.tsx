@@ -10,7 +10,7 @@ import Albums from "./albums.page";
 import Playlists from "./playlists.page";
 import Playlist from "./playlist.page";
 import Album from "./album.page";
-import { TracksContext } from "./hook/useTracks";
+import { PlaylistsContext, TracksContext } from "./hook/useTracks";
 
 import "@charcoal-ui/icons";
 
@@ -67,7 +67,9 @@ function Page() {
     <React.StrictMode>
       <React.Suspense>
         <TracksContext.Provider value={tracks}>
-          <RouterProvider router={router} />
+          <PlaylistsContext.Provider value={playlists}>
+            <RouterProvider router={router} />
+          </PlaylistsContext.Provider>
         </TracksContext.Provider>
       </React.Suspense>
     </React.StrictMode>
