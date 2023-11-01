@@ -7,6 +7,7 @@ import {
   trackArtworkURL,
 } from "../library";
 import { getEndpointURL } from "../api";
+import { json } from "react-router-dom";
 
 type ret = {
   addQueue: (...trackIDs: string[]) => void;
@@ -21,6 +22,10 @@ type ret = {
 };
 
 export function usePlayback(): ret {
+  useEffect(() => {
+    loadQueue();
+  }, []);
+
   useSyncExternalStore(queueStore.subscribe, queueStore.getSnapshot);
 
   const tracks = useTracks();
@@ -66,6 +71,7 @@ export function usePlayback(): ret {
       for (const id of trackIDs) {
         queueStore.add(id);
       }
+      saveQueue();
     },
     get queue() {
       const ids = queueStore.get();
@@ -82,6 +88,7 @@ export function usePlayback(): ret {
     setPosition(i) {
       queueStore.setPosition(i);
       setupMetadata();
+      saveQueue();
     },
     get playing() {
       return queueStore.getPlayState();
@@ -111,6 +118,7 @@ export function usePlayback(): ret {
       }
 
       queueStore._dispatch();
+      saveQueue();
     },
     clearQueue() {
       queueStore._queue = [];
@@ -118,6 +126,7 @@ export function usePlayback(): ret {
       queueStore.setPlayState(false);
       navigator.mediaSession.playbackState = "paused";
       queueStore._dispatch();
+      saveQueue();
     },
   };
 }
@@ -183,3 +192,21 @@ const queueStore = {
     }
   },
 };
+
+function saveQueue() {
+  const data = {
+    q: queueStore._queue,
+    p: queueStore._position,
+  };
+  localStorage.setItem("queue", JSON.stringify(data));
+}
+
+function loadQueue() {
+  const s = localStorage.getItem("queue");
+  if (!s) {
+    return;
+  }
+  const d = JSON.parse(s);
+  queueStore._queue = d.q;
+  queueStore._position = d.p;
+}
