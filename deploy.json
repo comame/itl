@@ -1,0 +1,5 @@
+{
+  "namespace": "comame-xyz",
+  "name": "itl-web",
+  "prebuild": "./build.sh"
+}
