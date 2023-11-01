@@ -1,6 +1,8 @@
-self.addEventListener("install", () => {
-  console.log("sw installed");
-});
+const version = "v1";
+
+self.addEventListener("install", (e) =>
+  e.waitUntil(caches.delete("v1").then(() => self.skipWaiting()))
+);
 
 /**
  * @param {Request} req
