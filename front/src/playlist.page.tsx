@@ -1,3 +1,4 @@
+import { useOffline } from "./hook/useOffline";
 import { useParam } from "./hook/useParam";
 import { usePlayback } from "./hook/usePlayback";
 import { usePlaylists, useTracks } from "./hook/useTracks";
@@ -25,6 +26,14 @@ export default function Playlist() {
     resume();
   };
 
+  const { save } = useOffline();
+
+  const onDownloadClick = () => {
+    for (const tr of tracks) {
+      save(tr.PersistentID);
+    }
+  };
+
   return (
     <div className="min-w-[350px] max-w-screen-screen3 ml-auto mr-auto pl-16 pr-16">
       <div className="grid grid-cols-[30%,1fr] gap-[24px]">
@@ -41,6 +50,9 @@ export default function Playlist() {
         </div>
         <div>
           <p className="text-lg font-semibold">{playlist.Name}</p>
+          <button onClick={onDownloadClick}>
+            <pixiv-icon name="24/DownloadAlt" scale="2" />
+          </button>
         </div>
       </div>
       <div className="mt-16 pr-8 pl-8 w-full">
