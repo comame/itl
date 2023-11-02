@@ -20,6 +20,7 @@ import "@charcoal-ui/icons";
 
 import "./index.css";
 import Settings from "./settings.page";
+import { ErrorBoundary, RouterErrorBoundary } from "./error_boundary";
 
 declare global {
   export namespace JSX {
@@ -38,6 +39,7 @@ function Page() {
     {
       path: "",
       element: <Index />,
+      errorElement: <RouterErrorBoundary />,
       children: [
         {
           path: "",
@@ -89,7 +91,11 @@ function mapParamToLoader({ params }: any): Record<string, string> {
   return params;
 }
 
-createRoot(document.getElementById("app")!).render(<Page />);
+createRoot(document.getElementById("app")!).render(
+  <ErrorBoundary>
+    <Page />
+  </ErrorBoundary>
+);
 
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js", {
