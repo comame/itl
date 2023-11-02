@@ -66,8 +66,7 @@ func main() {
 	}
 
 	router.Get("/logincheck", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Location", "/")
-		w.WriteHeader(http.StatusFound)
+		io.WriteString(w, `<!doctype html><script>location.href='/'</script>`)
 	})
 	router.Get("/api/tracks", func(w http.ResponseWriter, r *http.Request) {
 		js, err := json.Marshal(tracks)

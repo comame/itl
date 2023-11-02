@@ -1,5 +1,4 @@
-const version = "v1";
-
+//@ts-expect-error
 self.addEventListener("install", (e) => e.waitUntil(self.skipWaiting()));
 
 const ignoreSWRPrefixes = ["/api/artwork/", "/api/track/"];
@@ -9,28 +8,15 @@ const ignoreSWRPrefixes = ["/api/artwork/", "/api/track/"];
  * @returns {Promise<Response>}
  */
 async function cacheRequest(req) {
-  if (req.method !== "GET") {
-    return fetch(req);
-  }
+  const cache = await caches.open("v1");
+  const matched = await cache.match(req.url);
 
   const pathname = new URL(req.url).pathname;
-
-  if (pathname.startsWith("/__idproxy")) {
-    return fetch(req);
-  }
-
-  // ログインチェック用にキャッシュをバイパスする
-  if (pathname.startsWith("/logincheck")) {
-    return fetch(req);
-  }
-
-  const cache = await caches.open("v1");
-  const r = await cache.match(req.url);
-  if (r) {
+  if (matched) {
     if (!ignoreSWRPrefixes.some((pf) => pathname.startsWith(pf))) {
       fetch(req).then((res) => cache.put(req.url, res));
     }
-    return r;
+    return matched;
   }
 
   const fr = await fetch(req.clone());
@@ -39,4 +25,29 @@ async function cacheRequest(req) {
   return fr;
 }
 
-self.addEventListener("fetch", (e) => e.respondWith(cacheRequest(e.request)));
+/**
+ * @param {FetchEvent} e
+ */
+function fetchHandler(e) {
+  const req = e.request;
+
+  if (req.method !== "GET") {
+    return;
+  }
+
+  const pathname = new URL(req.url).pathname;
+
+  if (pathname.startsWith("/__idproxy")) {
+    return;
+  }
+
+  // ログインチェック用にキャッシュをバイパスする
+  if (pathname.startsWith("/logincheck")) {
+    return;
+  }
+
+  e.respondWith(cacheRequest(req));
+}
+
+//@ts-expect-error
+self.addEventListener("fetch", fetchHandler);
