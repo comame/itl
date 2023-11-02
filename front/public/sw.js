@@ -13,7 +13,10 @@ async function cacheRequest(req) {
 
   const pathname = new URL(req.url).pathname;
   if (matched) {
-    if (!ignoreSWRPrefixes.some((pf) => pathname.startsWith(pf))) {
+    if (
+      !ignoreSWRPrefixes.some((pf) => pathname.startsWith(pf)) &&
+      pathname !== "/"
+    ) {
       fetch(req).then((res) => cache.put(req.url, res));
     }
     return matched;
