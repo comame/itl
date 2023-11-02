@@ -54,21 +54,16 @@ func main() {
 	}
 	defer smbfs.Umount()
 
-	flib, err := smbfs.Open("./iTunes Music Library.xml")
-	if err != nil {
-		panic(err)
-	}
-	defer flib.Close()
-
-	tracks, playlists, err := parseLibraryXML(flib)
-	if err != nil {
-		panic(err)
-	}
-
 	router.Get("/logincheck", func(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, `<!doctype html><a href='/'>ログイン済み</a></script>`)
 	})
 	router.Get("/api/tracks", func(w http.ResponseWriter, r *http.Request) {
+		tracks, _, err := getLibrary(smbfs)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		js, err := json.Marshal(tracks)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -77,6 +72,12 @@ func main() {
 		w.Write(js)
 	})
 	router.Get("/api/playlists", func(w http.ResponseWriter, r *http.Request) {
+		_, playlists, err := getLibrary(smbfs)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		js, err := json.Marshal(playlists)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -87,6 +88,12 @@ func main() {
 	router.Get("/api/track/:persistent_id", func(w http.ResponseWriter, r *http.Request) {
 		p := router.Params(r)
 		persistentID := p["persistent_id"]
+
+		tracks, _, err := getLibrary(smbfs)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
 		var track *track
 		for _, tr := range tracks {
@@ -168,6 +175,12 @@ func main() {
 		p := router.Params(r)
 		persistentID := p["persistent_id"]
 
+		tracks, _, err := getLibrary(smbfs)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		var track *track
 		for _, tr := range tracks {
 			if tr.PersistentID == persistentID {
@@ -210,6 +223,21 @@ func main() {
 		}
 		router.Handler().ServeHTTP(w, r)
 	}))
+}
+
+func getLibrary(smbfs *smb2.Share) ([]track, []playlist, error) {
+	flib, err := smbfs.Open("./iTunes Music Library.xml")
+	if err != nil {
+		return nil, nil, err
+	}
+	defer flib.Close()
+
+	tracks, playlists, err := parseLibraryXML(flib)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return tracks, playlists, nil
 }
 
 func parseRangeHeader(v string) (int, int, error) {
