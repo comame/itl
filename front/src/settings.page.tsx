@@ -102,6 +102,17 @@ export default function Settings() {
   return (
     <div className="m-16">
       <div className="block">
+        ログインチェック{" "}
+        <button
+          className="font-bold"
+          onClick={() => {
+            location.href = "/logincheck";
+          }}
+        >
+          実行
+        </button>
+      </div>
+      <div className="block">
         Cache: アプリケーション{" "}
         <button className="font-bold" onClick={deleteCacheApplication}>
           実行

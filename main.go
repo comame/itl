@@ -65,6 +65,10 @@ func main() {
 		panic(err)
 	}
 
+	router.Get("/logincheck", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Location", "/")
+		w.WriteHeader(http.StatusFound)
+	})
 	router.Get("/api/tracks", func(w http.ResponseWriter, r *http.Request) {
 		js, err := json.Marshal(tracks)
 		if err != nil {

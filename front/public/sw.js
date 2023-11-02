@@ -2,6 +2,8 @@ const version = "v1";
 
 self.addEventListener("install", (e) => e.waitUntil(self.skipWaiting()));
 
+const ignoreSWRPrefixes = ["/api/artwork/", "/api/track/"];
+
 /**
  * @param {Request} req
  * @returns {Promise<Response>}
@@ -11,15 +13,23 @@ async function cacheRequest(req) {
     return fetch(req);
   }
 
+  const pathname = new URL(req.url).pathname;
+
+  if (pathname.startsWith("/__idproxy")) {
+    return fetch(req);
+  }
+
   // ログインチェック用にキャッシュをバイパスする
-  if (new URL(req.url).pathname.startsWith("/logincheck")) {
+  if (pathname.startsWith("/logincheck")) {
     return fetch(req);
   }
 
   const cache = await caches.open("v1");
   const r = await cache.match(req.url);
   if (r) {
-    fetch(req).then((res) => cache.put(req.url, res));
+    if (!ignoreSWRPrefixes.some((pf) => pathname.startsWith(pf))) {
+      fetch(req).then((res) => cache.put(req.url, res));
+    }
     return r;
   }
 
