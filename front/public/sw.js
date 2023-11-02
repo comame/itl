@@ -1,8 +1,6 @@
 const version = "v1";
 
-self.addEventListener("install", (e) =>
-  e.waitUntil(caches.delete("v1").then(() => self.skipWaiting()))
-);
+self.addEventListener("install", (e) => e.waitUntil(self.skipWaiting()));
 
 /**
  * @param {Request} req
@@ -13,9 +11,15 @@ async function cacheRequest(req) {
     return fetch(req);
   }
 
+  // ログインチェック用にキャッシュをバイパスする
+  if (new URL(req.url).pathname.startsWith("/logincheck")) {
+    return fetch(req);
+  }
+
   const cache = await caches.open("v1");
   const r = await cache.match(req.url);
   if (r) {
+    fetch(req).then((res) => cache.put(req.url, res));
     return r;
   }
 

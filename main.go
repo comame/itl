@@ -202,6 +202,7 @@ func main() {
 	http.ListenAndServe(":8080", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, ok := os.LookupEnv("DEV")
 		if ok {
+			log.Println(r.URL.Path)
 			allowCORSForDev(w)
 		}
 		router.Handler().ServeHTTP(w, r)
