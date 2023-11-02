@@ -145,7 +145,7 @@ export function PlaybackControl() {
           src={src}
         ></audio>
         <div className="flex justify-between pl-16 pr-16 max-w-screen-screen2 ml-auto mr-auto">
-          <div className="flex flex-col justify-center max-w-[600px] cursor-pointer">
+          <div className="flex flex-col justify-center max-w-[600px] w-[calc(100%-48px)] cursor-pointer">
             {currentTrack && (
               <>
                 <span className="font-semibold text-lg whitespace-nowrap overflow-hidden overflow-ellipsis">
