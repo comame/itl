@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTracks } from "./hook/useTracks";
 import {
   albumArtist,
@@ -9,12 +9,16 @@ import {
 } from "./library";
 import React, { useState } from "react";
 import { GlobalNavigation } from "./globalNavigation";
+import { useParam } from "./hook/useParam";
 
 export default function Albums() {
+  const p = useParam();
+  const navigate = useNavigate();
+
   const tracks = useTracks();
   const tracksByAlbum = splitByAlbum(tracks);
 
-  const [selectedGenre, selectGenre] = useState("");
+  const selectedGenre = p["genre"] ?? "";
   const genres = getGenres(tracks);
 
   return (
@@ -22,7 +26,16 @@ export default function Albums() {
       <select
         value={selectedGenre}
         onChange={(e) => {
-          selectGenre(e.currentTarget.value);
+          const genre = e.currentTarget.value;
+          if (genre === "") {
+            navigate("/", {
+              replace: true,
+            });
+            return;
+          }
+          navigate(`/genre/${e.currentTarget.value}`, {
+            replace: true,
+          });
         }}
         className="mb-16 ml-16"
       >

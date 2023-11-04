@@ -46,6 +46,11 @@ function Page() {
           element: <Albums />,
         },
         {
+          path: "genre/:genre",
+          element: <Albums />,
+          loader: mapParamToLoader,
+        },
+        {
           path: "playlists",
           element: <Playlists />,
         },

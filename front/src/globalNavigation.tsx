@@ -3,11 +3,14 @@ import { Link, useHref, useLocation } from "react-router-dom";
 export function GlobalNavigation() {
   const location = useLocation();
 
+  const isAlbumPage = () =>
+    location.pathname === "/" || location.pathname.startsWith("/genre/");
+
   return (
     <div className="">
       <Link
         to="/"
-        data-now={location.pathname == "/" ? "t" : "f"}
+        data-now={isAlbumPage() ? "t" : "f"}
         className="inline-block text-2xl text-text2 pl-16 data-[now=t]:font-bold data-[now=t]:text-text1"
       >
         アルバム
