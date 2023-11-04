@@ -1,18 +1,19 @@
 SHELL=/bin/bash
 
-.PHONY: build build_front build_go dev
+include .env
+export
 
-build: build_front build_go
+.PHONY: build dev
 
-build_front:
+build:
+	rm -rf front/dist
 	cd front && npx vite build
-
-build_go:
 	go build -o out .
 
 dev:
 	cd front && npx vite &
 	DEV=1 go run .
 
-	wait -n
-	exit $?
+dev-setup:
+	cd front && npm ci
+	go mod tidy

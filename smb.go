@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"net"
+	"os"
 
 	"github.com/hirochachacha/go-smb2"
 )
@@ -45,15 +46,20 @@ func (f *winFile) Close() error {
 
 // Windows からファイルを読み出す
 func opemSMB2File(name string) (io.ReadCloser, error) {
-	conn, err := net.Dial("tcp", "d1.comame.dev:445") // めんどいのでハードコード
+	host := os.Getenv("SMB_HOST")
+	user := os.Getenv("SMB_USER")
+	password := os.Getenv("SMB_PASSWORD")
+	sharename := os.Getenv("SMB_SHARENAME")
+
+	conn, err := net.Dial("tcp", host) // めんどいのでハードコード
 	if err != nil {
 		return nil, err
 	}
 
 	d := &smb2.Dialer{
 		Initiator: &smb2.NTLMInitiator{
-			User:     "read-itunes",
-			Password: "read-itunes",
+			User:     user,
+			Password: password,
 		},
 	}
 
@@ -62,7 +68,7 @@ func opemSMB2File(name string) (io.ReadCloser, error) {
 		return nil, err
 	}
 
-	smbfs, err := s.Mount("iTunes")
+	smbfs, err := s.Mount(sharename)
 	if err != nil {
 		return nil, err
 	}
