@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useOffline } from "./hook/useOffline";
 import { useParam } from "./hook/useParam";
 import { usePlayback } from "./hook/usePlayback";
@@ -32,10 +33,16 @@ export default function Album() {
 
   const { save } = useOffline();
 
+  const [isDownloading, setIsDownloading] = useState(false);
   const onDownloadClick = async () => {
+    if (isDownloading) {
+      return;
+    }
+    setIsDownloading(true);
     for (const tr of album.tracks) {
       await save(tr.PersistentID);
     }
+    setIsDownloading(false);
   };
 
   const altrs = album.tracks;
@@ -65,7 +72,8 @@ export default function Album() {
           <p className="text-lg font-semibold">{album.album}</p>
           <p>{albumArtist(album.tracks[0])}</p>
           <button onClick={onDownloadClick}>
-            <pixiv-icon name="24/DownloadAlt" scale="2" />
+            {isDownloading && <pixiv-icon name="24/Roll" scale="2" />}
+            {!isDownloading && <pixiv-icon name="24/DownloadAlt" scale="2" />}
           </button>
         </div>
       </div>
