@@ -1,6 +1,6 @@
 import { Link, Outlet } from "react-router-dom";
-import { PlaybackControl } from "./playbackControl";
-import { GlobalNavigation } from "./globalNavigation";
+import { PlaybackControl } from "./playback_control";
+import { GlobalNavigation } from "./global_navigation";
 
 export default function Index() {
   return (

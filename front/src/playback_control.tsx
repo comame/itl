@@ -2,7 +2,7 @@ import { useRef, ReactEventHandler, useEffect, useState } from "react";
 import { usePlayback } from "./hook/usePlayback";
 import { getEndpointURL } from "./api";
 import { trackArtworkURL } from "./library";
-import { TrackList } from "./trackList";
+import { TrackList } from "./track_list";
 
 export function PlaybackControl() {
   const [showControls, setShowControls] = useState(false);

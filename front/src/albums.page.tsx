@@ -8,7 +8,7 @@ import {
   trackByAlbum,
 } from "./library";
 import React, { useState } from "react";
-import { GlobalNavigation } from "./globalNavigation";
+import { GlobalNavigation } from "./global_navigation";
 import { useParam } from "./hook/useParam";
 
 export default function Albums() {

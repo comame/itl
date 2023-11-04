@@ -9,7 +9,7 @@ import {
   splitByAlbum,
   totalTimeInLocal,
 } from "./library";
-import { TrackList } from "./trackList";
+import { TrackList } from "./track_list";
 
 export default function Album() {
   const p = useParam();
