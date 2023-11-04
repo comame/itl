@@ -74,7 +74,7 @@ export function TrackList({ tracks, showAlbum, controlQueue }: props) {
               {tr.Name}
             </td>
             <td className="hidden screen2:table-cell whitespace-nowrap overflow-x-hidden text-ellipsis pl-16 pr-16">
-              {showAlbum ? tr.Album + ", " + albumArtist(tr) : tr.Artist}
+              {showAlbum ? tr.Album + ", " + albumArtist(tr) : albumArtist(tr)}
             </td>
             <td className="hidden screen2:table-cell whitespace-nowrap overflow-x-hidden text-ellipsis">
               {totalTimeInLocal(tr.TotalTime)}
