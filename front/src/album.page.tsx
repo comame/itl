@@ -32,9 +32,9 @@ export default function Album() {
 
   const { save } = useOffline();
 
-  const onDownloadClick = () => {
+  const onDownloadClick = async () => {
     for (const tr of album.tracks) {
-      save(tr.PersistentID);
+      await save(tr.PersistentID);
     }
   };
 

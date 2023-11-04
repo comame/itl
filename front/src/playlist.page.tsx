@@ -28,9 +28,9 @@ export default function Playlist() {
 
   const { save } = useOffline();
 
-  const onDownloadClick = () => {
+  const onDownloadClick = async () => {
     for (const tr of tracks) {
-      save(tr.PersistentID);
+      await save(tr.PersistentID);
     }
   };
 
