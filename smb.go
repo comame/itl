@@ -45,7 +45,7 @@ func (f *winFile) Close() error {
 }
 
 // Windows からファイルを読み出す
-func opemSMB2File(name string) (io.ReadCloser, error) {
+func openSMB(name string) (io.ReadCloser, error) {
 	host := os.Getenv("SMB_HOST")
 	user := os.Getenv("SMB_USER")
 	password := os.Getenv("SMB_PASSWORD")

@@ -88,7 +88,7 @@ func main() {
 			return
 		}
 
-		f, err := opemSMB2File(loc)
+		f, err := openSMB(loc)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -167,7 +167,7 @@ func main() {
 
 // SMB から iTunes Music Library.xml を取得し、パースして返す
 func getLibrary() ([]track, []playlist, error) {
-	f, err := opemSMB2File("./iTunes Music Library.xml")
+	f, err := openSMB("./iTunes Music Library.xml")
 	if err != nil {
 		return nil, nil, err
 	}
@@ -198,7 +198,7 @@ func extractArtworks(track track) (io.ReadCloser, error) {
 	}
 
 	// SMB から音声ファイルを取ってきて、
-	f, err := opemSMB2File(loc)
+	f, err := openSMB(loc)
 	if err != nil {
 		return nil, err
 	}
