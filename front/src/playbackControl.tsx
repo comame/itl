@@ -91,13 +91,17 @@ export function PlaybackControl() {
 
   return (
     <>
-      {showControls && (
+      {
         <>
           <div
-            className="fixed top-0 left-0 bg-[rgba(0,0,0,0.6)] w-full h-[calc(30vh-128px)]"
+            data-show={showControls ? "t" : "f"}
+            className="-z-10 opacity-0 data-[show=t]:block data-[show=t]:opacity-100 data-[show=t]:z-10 fixed top-0 left-0 bg-[rgba(0,0,0,0.6)] w-full h-[calc(30vh-128px)] transition-all [transition-property:opacity]"
             onClick={closeShowControl}
           ></div>
-          <div className="fixed bottom-64 left-0 w-full h-[calc(70vh+64px)] bg-background2 overflow-hidden">
+          <div
+            data-show={showControls ? "t" : "f"}
+            className="fixed bottom-[calc(-100vh+64px)] data-[show=t]:bottom-64 left-0 w-full h-[calc(70vh+64px)] bg-background2 overflow-hidden transition-all"
+          >
             <div className="text-right max-w-screen-screen3 h-40 ml-auto mr-auto pl-16 pr-16 pt-8 ">
               <button className="font-bold " onClick={onClearQueue}>
                 キューを削除
@@ -122,7 +126,7 @@ export function PlaybackControl() {
             </div>
           </div>
         </>
-      )}
+      }
       <div
         className="w-full h-64 bg-background2 fixed bottom-0 left-0"
         style={
