@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, useHref, useLocation } from "react-router-dom";
 
 export function GlobalNavigation() {
@@ -6,8 +7,21 @@ export function GlobalNavigation() {
   const isAlbumPage = () =>
     location.pathname === "/" || location.pathname.startsWith("/genre/");
 
+  const [offline, setOffline] = useState(!navigator.onLine);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setOffline(!navigator.onLine);
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <div className="">
+    <div>
+      {offline && (
+        <p className="fixed top-8 right-8 bg-background2 p-8 font-bold text-text2 rounded-8">
+          オフライン
+        </p>
+      )}
       <Link
         to="/"
         data-now={isAlbumPage() ? "t" : "f"}
