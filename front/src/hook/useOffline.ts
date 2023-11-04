@@ -27,8 +27,9 @@ export function useOffline(): {
   }, []);
 
   if (!store.init) {
+    // Android の Chrome でなぜか Cache API が遅くてロードが終わらないので、完了を待たない
     store.init = true;
-    throw caches
+    caches
       .open("v1")
       .then((cache) => cache.keys())
       .then((keys) => keys.filter((r) => r.method === "GET").map((r) => r.url))
@@ -37,11 +38,7 @@ export function useOffline(): {
       .then((paths) => paths.map((p) => p.slice("/api/track/".length)))
       .then((ids) => {
         store.saved = ids;
-        store.ready = true;
       });
-  }
-  if (!store.ready) {
-    throw Promise.resolve();
   }
 
   return {
@@ -49,14 +46,9 @@ export function useOffline(): {
       return store.saved;
     },
     async save(trackID: string) {
-      const c = await caches.open("v1");
+      // fetch すれば Service Worker でキャッシュされる
       const u = getEndpointURL(`/api/track/${trackID}`);
-      const r = await fetch(u);
-      if (r.ok) {
-        await c.put(u, r);
-        store.saved = [...store.saved, trackID];
-        store.dispath();
-      }
+      await fetch(u);
     },
   };
 }
@@ -64,7 +56,6 @@ export function useOffline(): {
 const store = {
   _listeners: [] as (() => unknown)[],
   init: false,
-  ready: false,
   saved: [] as string[],
 
   subscribe(listener: () => unknown) {
@@ -74,9 +65,6 @@ const store = {
     };
   },
   getSnapshot() {
-    if (!store.ready) {
-      return false;
-    }
     return store.saved.toString();
   },
 

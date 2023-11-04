@@ -67,6 +67,13 @@ export default function Settings() {
     }
   };
 
+  const deleteCacheAll = async () => {
+    if (!confirm("すべてのキャッシュを削除？")) {
+      return;
+    }
+    await caches.delete("v1");
+  };
+
   const deleteLocalStorage = () => {
     if (!confirm("ローカルストレージを削除？")) {
       return;
@@ -137,6 +144,12 @@ export default function Settings() {
         </button>
       </div>
       <div className="block">
+        Cache: すべて{" "}
+        <button className="font-bold" onClick={deleteCacheAll}>
+          実行
+        </button>
+      </div>
+      <div className="block">
         LocalStorage{" "}
         <button className="font-bold" onClick={deleteLocalStorage}>
           実行
@@ -164,6 +177,12 @@ export default function Settings() {
         value={localStorage.getItem("queue") ?? ""}
         className="w-9/12 h-272 border-2 mr-auto ml-auto block"
       />
+
+      <hr className="mt-16 mb-16" />
+
+      <h2 className="font-bold text-lg">ビルド時刻</h2>
+      {/* @ts-expect-error import.meta で怒られる */}
+      <p>{import.meta.env.VITE_TIME || "不明"}</p>
     </div>
   );
 }

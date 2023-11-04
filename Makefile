@@ -7,7 +7,7 @@ export
 
 build:
 	rm -rf front/dist
-	cd front && npx vite build
+	cd front && VITE_TIME=`date +%Y%m%d-%H%M%S` npx vite build
 	go build -o out .
 
 dev:
