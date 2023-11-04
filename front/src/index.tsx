@@ -76,7 +76,7 @@ function Page() {
 
   return (
     <React.StrictMode>
-      <React.Suspense>
+      <React.Suspense fallback={<p>Loading...</p>}>
         <TracksContext.Provider value={tracks}>
           <PlaylistsContext.Provider value={playlists}>
             <RouterProvider router={router} />

@@ -39,6 +39,7 @@ export default function Playlist() {
       <div className="grid grid-cols-[30%,1fr] gap-[24px]">
         <div className="relative cursor-pointer group" onClick={onClickArtwork}>
           <img
+            crossOrigin="use-credentials"
             src={trackArtworkURL(tracks[0]?.PersistentID ?? "")}
             className="aspect-square object-cover w-full"
           />

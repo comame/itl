@@ -20,6 +20,7 @@ export default function Playlists() {
               <Link to={`/playlist/${pl.PersistentID}`}>
                 <div className="w-full aspect-square [border:1px_solid_#858585]">
                   <img
+                    crossOrigin="use-credentials"
                     src={trackArtworkURL(playlistTrack(pl)?.PersistentID ?? "")}
                     className="aspect-square object-cover w-full"
                   />

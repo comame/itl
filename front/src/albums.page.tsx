@@ -46,6 +46,7 @@ export default function Albums() {
               <Link to={`/album/${album.id}`}>
                 <div className="w-full aspect-square [border:1px_solid_#858585]">
                   <img
+                    crossOrigin="use-credentials"
                     src={albumArtworkURL(tracksByAlbum, album.id)}
                     className="aspect-square object-cover w-full"
                   />

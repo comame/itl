@@ -51,6 +51,7 @@ export default function Album() {
       <div className="grid grid-cols-[30%,1fr] gap-[24px]">
         <div className="relative cursor-pointer group" onClick={onClickArtwork}>
           <img
+            crossOrigin="use-credentials"
             src={albumArtworkURL(tracksByAlbum, album.id)}
             className="aspect-square object-cover w-full"
           />
