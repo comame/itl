@@ -31,8 +31,14 @@ function fetchHandler(e) {
     return;
   }
 
+  // オフライン状態のみ Cache を見る
+  if (!navigator.onLine) {
+    e.respondWith(cacheRequest(req));
+  }
+
   const pathname = new URL(req.url).pathname;
   if (!pathname.startsWith("/api")) {
+    cacheRequest(req.clone());
     return;
   }
 
