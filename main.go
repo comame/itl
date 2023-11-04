@@ -15,7 +15,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -25,12 +24,7 @@ import (
 //go:embed front/dist
 var distFs embed.FS
 
-var cachedTracks []track
-
 func main() {
-	router.Get("/logincheck", func(w http.ResponseWriter, r *http.Request) {
-		io.WriteString(w, `<!doctype html><a href='/'>ログイン済み</a></script>`)
-	})
 	router.Get("/api/tracks", func(w http.ResponseWriter, r *http.Request) {
 		tracks, _, err := getLibrary()
 		if err != nil {
@@ -46,6 +40,7 @@ func main() {
 		}
 		w.Write(js)
 	})
+
 	router.Get("/api/playlists", func(w http.ResponseWriter, r *http.Request) {
 		_, playlists, err := getLibrary()
 		if err != nil {
@@ -61,6 +56,7 @@ func main() {
 		}
 		w.Write(js)
 	})
+
 	router.Get("/api/track/:persistent_id", func(w http.ResponseWriter, r *http.Request) {
 		p := router.Params(r)
 		persistentID := p["persistent_id"]
@@ -106,23 +102,26 @@ func main() {
 
 		io.Copy(w, f)
 	})
+
+	var cachedTracks []track
+
 	router.Get("/api/artwork/:persistent_id", func(w http.ResponseWriter, r *http.Request) {
 		p := router.Params(r)
 		persistentID := p["persistent_id"]
 
-		tracks := cachedTracks
-		if tracks == nil {
+		// ライブラリにアクセスしたとき、大量に同時アクセスが飛んでくるため、メモリ上にトラック情報をキャッシュする
+		if cachedTracks == nil {
 			t, _, err := getLibrary()
 			if err != nil {
 				log.Println(err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			tracks = t
+			cachedTracks = t
 		}
 
 		var track *track
-		for _, tr := range tracks {
+		for _, tr := range cachedTracks {
 			if tr.PersistentID == persistentID {
 				track = &tr
 				break
@@ -145,6 +144,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		io.Copy(w, pf)
 	})
+
 	router.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 		sub, err := fs.Sub(distFs, "front/dist")
 		if err != nil {
@@ -165,6 +165,7 @@ func main() {
 	}))
 }
 
+// SMB から iTunes Music Library.xml を取得し、パースして返す
 func getLibrary() ([]track, []playlist, error) {
 	f, err := opemSMB2File("./iTunes Music Library.xml")
 	if err != nil {
@@ -177,37 +178,11 @@ func getLibrary() ([]track, []playlist, error) {
 		return nil, nil, err
 	}
 
-	cachedTracks = tracks
-
 	return tracks, playlists, nil
 }
 
-func parseRangeHeader(v string) (int, int, error) {
-	rp := regexp.MustCompile(`^bytes=(\d+)-(\d+)?$`)
-	fo := rp.FindAllStringSubmatch(v, 2)
-	if fo == nil {
-		return 0, 0, errors.New("unsupported or invalid format of range header")
-	}
-
-	sstr := fo[0][1]
-	estr := "0"
-
-	if len(fo[0]) == 3 && fo[0][2] != "" {
-		estr = fo[0][2]
-	}
-
-	sint, err := strconv.ParseInt(sstr, 10, 64)
-	if err != nil {
-		return 0, 0, err
-	}
-	eint, err := strconv.ParseInt(estr, 10, 64)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return int(sint), int(eint), nil
-}
-
+// track のアートワーク画像を返す。
+// 一度取得されたアートワークはファイルシステムにキャッシュされる。キャッシュがなければ SMB から音声ファイルを取得して、ffmpeg でアートワークを抽出する。
 func extractArtworks(track track) (io.ReadCloser, error) {
 	loc, err := convLocation(track.Locaton)
 	if err != nil {
@@ -216,22 +191,23 @@ func extractArtworks(track track) (io.ReadCloser, error) {
 
 	afpath := track.PersistentID + path.Ext(loc)
 
-	// とりあえず初回見てみて、存在すればそのまま返す
+	// とりあえず初回キャッシュを見てみて、存在すればそのまま返す。
 	fpf, _ := os.Open(".ar/" + afpath + ".jpg")
 	if fpf != nil {
 		return fpf, nil
 	}
 
+	// SMB から音声ファイルを取ってきて、
 	f, err := opemSMB2File(loc)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
-	// 作業フォルダを作り、
+	// ... 作業フォルダを作り、
 	os.MkdirAll(".ar", 0777)
 
-	// オーディオファイルを開き、もしなければダウンロードし、
+	// ... オーディオファイルを開き、もしなければダウンロードし、
 	af, err := os.Open(".ar/" + afpath)
 	if errors.Is(err, os.ErrNotExist) {
 		cf, err := os.Create(".ar/" + afpath)
@@ -250,9 +226,11 @@ func extractArtworks(track track) (io.ReadCloser, error) {
 	}
 	defer af.Close()
 
-	// エラーを握りつぶす。もしここで失敗していたら、次の os.Open でコケるはず
+	// ... ffmpeg でアートワークを抽出し、
 	exec.Command("ffmpeg", "-i", ".ar/"+afpath, "-an", "-c:v", "copy", ".ar/"+afpath+".jpg").Run()
+	// エラーは握りつぶす。もしここで失敗していたら、次の os.Open でコケるはず
 
+	// ... 抽出されたアートワークを開く。
 	pf, err := os.Open(".ar/" + afpath + ".jpg")
 	if err != nil {
 		return nil, err
@@ -261,11 +239,14 @@ func extractArtworks(track track) (io.ReadCloser, error) {
 	return pf, nil
 }
 
+// 開発環境では CORS ヘッダを返す
 func allowCORSForDev(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 }
 
+// iTunes Music Library.xml の Location を SMB のパスに変換する
+// FIXME: 自分の環境でしか動作しない
 func convLocation(p string) (string, error) {
 	prefix := "file://localhost/C:/Users/comame/Music/iTunes"
 	p = "." + p[len(prefix):]

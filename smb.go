@@ -7,6 +7,7 @@ import (
 	"github.com/hirochachacha/go-smb2"
 )
 
+// Windows から SMB で取得したファイルを表す。io.ReadCloser を実装する。
 type winFile struct {
 	netCon  net.Conn
 	session *smb2.Session
