@@ -111,6 +111,15 @@ func main() {
 		persistentID := p["persistent_id"]
 
 		tracks := cachedTracks
+		if tracks == nil {
+			t, _, err := getLibrary()
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			tracks = t
+		}
 
 		var track *track
 		for _, tr := range tracks {
