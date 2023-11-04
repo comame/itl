@@ -12,7 +12,7 @@ export default function Playlists() {
 
   return (
     <div className="w-full">
-      <ul className="grid w-full max-w-screen-screen5 grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-[16px] ml-auto mr-auto pl-8 pr-8">
+      <ul className="grid w-full max-w-screen-screen5 grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-[16px] ml-auto mr-auto pl-8 pr-8">
         {playlists
           .filter((pl) => pl.ItemTrackIDs !== null)
           .map((pl) => (

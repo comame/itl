@@ -58,7 +58,7 @@ export default function Playlist() {
         </div>
         <div>
           <p className="text-lg font-semibold">{playlist.Name}</p>
-          <button onClick={onDownloadClick}>
+          <button onClick={onDownloadClick} className="mt-16 text-text1">
             {isDownloading && <pixiv-icon name="24/Roll" scale="2" />}
             {!isDownloading && <pixiv-icon name="24/DownloadAlt" scale="2" />}
           </button>

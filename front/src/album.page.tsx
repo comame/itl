@@ -71,7 +71,7 @@ export default function Album() {
         <div>
           <p className="text-lg font-semibold">{album.album}</p>
           <p>{albumArtist(album.tracks[0])}</p>
-          <button onClick={onDownloadClick}>
+          <button onClick={onDownloadClick} className="mt-16 text-text1">
             {isDownloading && <pixiv-icon name="24/Roll" scale="2" />}
             {!isDownloading && <pixiv-icon name="24/DownloadAlt" scale="2" />}
           </button>

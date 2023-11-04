@@ -46,7 +46,7 @@ export default function Albums() {
           </React.Fragment>
         ))}
       </select>
-      <ul className="grid w-full max-w-screen-screen5 grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-[16px] ml-auto mr-auto pl-8 pr-8">
+      <ul className="grid w-full max-w-screen-screen5 grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-[16px] ml-auto mr-auto pl-8 pr-8">
         {tracksByAlbum
           .filter((al) => {
             if (!selectedGenre) {
