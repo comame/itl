@@ -43,6 +43,22 @@ export function PlaybackControl() {
     }
   };
 
+  useEffect(() => {
+    const l = (e: KeyboardEvent) => {
+      if (e.code !== "Space") {
+        return;
+      }
+      e.preventDefault();
+      if (playing) {
+        pause();
+      } else {
+        resume();
+      }
+    };
+    window.addEventListener("keypress", l);
+    return () => window.removeEventListener("keypress", l);
+  }, [playing, pause, resume]);
+
   const onCanPlay = () => {
     if (playing) {
       audioRef.current?.play();
