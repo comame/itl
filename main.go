@@ -6,12 +6,10 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
-	"fmt"
 	"io"
 	"io/fs"
 	"log"
 	"mime"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -22,44 +20,21 @@ import (
 	"strings"
 
 	"github.com/comame/router-go"
-	"github.com/hirochachacha/go-smb2"
 )
 
 //go:embed front/dist
 var distFs embed.FS
 
+var cachedTracks []track
+
 func main() {
-	conn, err := net.Dial("tcp", "d1.comame.dev:445") // めんどいのでハードコード
-	if err != nil {
-		panic(err)
-	}
-	defer conn.Close()
-
-	d := &smb2.Dialer{
-		Initiator: &smb2.NTLMInitiator{
-			User:     "read-itunes",
-			Password: "read-itunes",
-		},
-	}
-
-	s, err := d.Dial(conn)
-	if err != nil {
-		panic(err)
-	}
-	defer s.Logoff()
-
-	smbfs, err := s.Mount("iTunes")
-	if err != nil {
-		panic(err)
-	}
-	defer smbfs.Umount()
-
 	router.Get("/logincheck", func(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, `<!doctype html><a href='/'>ログイン済み</a></script>`)
 	})
 	router.Get("/api/tracks", func(w http.ResponseWriter, r *http.Request) {
-		tracks, _, err := getLibrary(smbfs)
+		tracks, _, err := getLibrary()
 		if err != nil {
+			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -72,8 +47,9 @@ func main() {
 		w.Write(js)
 	})
 	router.Get("/api/playlists", func(w http.ResponseWriter, r *http.Request) {
-		_, playlists, err := getLibrary(smbfs)
+		_, playlists, err := getLibrary()
 		if err != nil {
+			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -89,8 +65,9 @@ func main() {
 		p := router.Params(r)
 		persistentID := p["persistent_id"]
 
-		tracks, _, err := getLibrary(smbfs)
+		tracks, _, err := getLibrary()
 		if err != nil {
+			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -115,7 +92,7 @@ func main() {
 			return
 		}
 
-		f, err := smbfs.Open(loc)
+		f, err := opemSMB2File(loc)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -125,61 +102,15 @@ func main() {
 
 		typ := mime.TypeByExtension(path.Ext(loc))
 		w.Header().Set("Content-Type", typ)
-		w.Header().Set("Accept-Ranges", "bytes")
+		w.WriteHeader(http.StatusOK)
 
-		rh := r.Header.Get("Range")
-		if rh == "" {
-			// Range でなければ普通に返す
-			w.WriteHeader(http.StatusOK)
-			io.Copy(w, f)
-			return
-		}
-
-		start, end, err := parseRangeHeader(rh)
-		if err != nil {
-			// Range のパースに失敗したら普通に返す
-			log.Println(err)
-			w.WriteHeader(http.StatusOK)
-			io.Copy(w, f)
-			return
-		}
-
-		aud, err := io.ReadAll(f)
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		if len(aud) < end {
-			w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
-			return
-		}
-
-		if end == 0 {
-			w.Write(aud)
-			return
-		}
-
-		if end < start {
-			w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
-			return
-		}
-
-		w.Header().Add("Content-Range", fmt.Sprintf("%d-%d/%d", start, end-1, len(aud)))
-		w.Header().Add("Content-Length", fmt.Sprintf("%d", end-start))
-		w.WriteHeader(http.StatusPartialContent)
-		w.Write(aud[start:end])
+		io.Copy(w, f)
 	})
 	router.Get("/api/artwork/:persistent_id", func(w http.ResponseWriter, r *http.Request) {
 		p := router.Params(r)
 		persistentID := p["persistent_id"]
 
-		tracks, _, err := getLibrary(smbfs)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+		tracks := cachedTracks
 
 		var track *track
 		for _, tr := range tracks {
@@ -194,7 +125,7 @@ func main() {
 			return
 		}
 
-		pf, err := extractArtworks(smbfs, *track)
+		pf, err := extractArtworks(*track)
 		if err != nil {
 			log.Println("ext: " + err.Error())
 			w.WriteHeader(http.StatusNotFound)
@@ -218,24 +149,26 @@ func main() {
 	http.ListenAndServe(":8080", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		_, ok := os.LookupEnv("DEV")
 		if ok {
-			log.Println(r.URL.Path)
+			// log.Println(r.URL.Path)
 			allowCORSForDev(w)
 		}
 		router.Handler().ServeHTTP(w, r)
 	}))
 }
 
-func getLibrary(smbfs *smb2.Share) ([]track, []playlist, error) {
-	flib, err := smbfs.Open("./iTunes Music Library.xml")
+func getLibrary() ([]track, []playlist, error) {
+	f, err := opemSMB2File("./iTunes Music Library.xml")
 	if err != nil {
 		return nil, nil, err
 	}
-	defer flib.Close()
+	defer f.Close()
 
-	tracks, playlists, err := parseLibraryXML(flib)
+	tracks, playlists, err := parseLibraryXML(f)
 	if err != nil {
 		return nil, nil, err
 	}
+
+	cachedTracks = tracks
 
 	return tracks, playlists, nil
 }
@@ -266,7 +199,7 @@ func parseRangeHeader(v string) (int, int, error) {
 	return int(sint), int(eint), nil
 }
 
-func extractArtworks(fs *smb2.Share, track track) (io.ReadCloser, error) {
+func extractArtworks(track track) (io.ReadCloser, error) {
 	loc, err := convLocation(track.Locaton)
 	if err != nil {
 		return nil, err
@@ -280,7 +213,7 @@ func extractArtworks(fs *smb2.Share, track track) (io.ReadCloser, error) {
 		return fpf, nil
 	}
 
-	f, err := fs.Open(loc)
+	f, err := opemSMB2File(loc)
 	if err != nil {
 		return nil, err
 	}

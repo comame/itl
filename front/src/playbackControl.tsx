@@ -141,10 +141,9 @@ export function PlaybackControl() {
           ref={audioRef}
           onEnded={onEnded}
           onCanPlay={onCanPlay}
-          onError={(e) => {
-            alert("Failed to play");
-          }}
+          onError={onEnded} // TODO: エラー表示
           src={src}
+          crossOrigin="use-credentials"
         ></audio>
         <div className="flex justify-between pl-16 pr-16 max-w-screen-screen2 ml-auto mr-auto">
           <div className="flex flex-col justify-center max-w-[600px] w-[calc(100%-48px)] cursor-pointer">

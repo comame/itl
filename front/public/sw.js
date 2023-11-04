@@ -1,8 +1,6 @@
 //@ts-expect-error
 self.addEventListener("install", (e) => e.waitUntil(self.skipWaiting()));
 
-const ignoreSWRPrefixes = ["/api/artwork/", "/api/track/"];
-
 /**
  * @param {Request} req
  * @returns {Promise<Response>}
@@ -11,19 +9,14 @@ async function cacheRequest(req) {
   const cache = await caches.open("v1");
   const matched = await cache.match(req.url);
 
-  const pathname = new URL(req.url).pathname;
   if (matched) {
-    if (
-      !ignoreSWRPrefixes.some((pf) => pathname.startsWith(pf)) &&
-      pathname !== "/"
-    ) {
-      fetch(req).then((res) => cache.put(req.url, res));
-    }
     return matched;
   }
 
   const fr = await fetch(req.clone());
-  cache.put(req.url, fr.clone());
+  if (fr.ok) {
+    cache.put(req.url, fr.clone());
+  }
 
   return fr;
 }
@@ -39,18 +32,11 @@ function fetchHandler(e) {
   }
 
   const pathname = new URL(req.url).pathname;
-
-  if (pathname.startsWith("/__idproxy")) {
-    return;
-  }
-
-  // ログインチェック用にキャッシュをバイパスする
-  if (pathname.startsWith("/logincheck")) {
+  if (!pathname.startsWith("/api")) {
     return;
   }
 
   e.respondWith(cacheRequest(req));
 }
 
-//@ts-expect-error
 self.addEventListener("fetch", fetchHandler);
