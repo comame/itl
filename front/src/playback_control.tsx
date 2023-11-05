@@ -6,31 +6,21 @@ import { TrackList } from "./track_list";
 
 export function PlaybackControl() {
   const [showControls, setShowControls] = useState(false);
-  const [volume, setVolume] = useState(20);
+  const [volume, setVolumeState] = useState(20);
   const [volumeWarned, setVolumeWarned] = useState(false);
 
-  const { queue, position, setPosition, playing, pause, resume, clearQueue } =
-    usePlayback();
+  const {
+    queue,
+    position,
+    setPosition,
+    playing,
+    pause,
+    resume,
+    clearQueue,
+    setVolume,
+  } = usePlayback();
 
   const currentTrack = position >= 0 ? queue[position] : null;
-
-  const audioRef = useRef<HTMLAudioElement>(null);
-
-  useEffect(() => {
-    if (playing) {
-      audioRef.current?.play();
-    } else {
-      audioRef.current?.pause();
-    }
-  }, [audioRef.current, playing]);
-
-  const onEnded = () => {
-    setPosition(position + 1);
-    const c = audioRef.current;
-    if (c) {
-      c.currentTime = 0;
-    }
-  };
 
   const onClickPlayPauseButton = (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
@@ -59,14 +49,6 @@ export function PlaybackControl() {
     return () => window.removeEventListener("keypress", l);
   }, [playing, pause, resume]);
 
-  const onCanPlay = () => {
-    if (playing) {
-      audioRef.current?.play();
-    } else {
-      audioRef.current?.pause();
-    }
-  };
-
   const toggleShowControl = () => {
     setShowControls((v) => !v);
   };
@@ -87,15 +69,12 @@ export function PlaybackControl() {
       }
       setVolumeWarned(true);
     }
-    setVolume(volume);
+    setVolumeState(volume);
   };
 
+  // 音量の初期値を渡す
   useEffect(() => {
-    const e = audioRef.current;
-    if (!e) {
-      return;
-    }
-    e.volume = volume / 100;
+    setVolume(volume);
   }, [volume]);
 
   const src = currentTrack
@@ -157,14 +136,6 @@ export function PlaybackControl() {
         }
         onClick={toggleShowControl}
       >
-        <audio
-          ref={audioRef}
-          onEnded={onEnded}
-          onCanPlay={onCanPlay}
-          onError={onEnded} // TODO: エラー表示
-          src={src}
-          crossOrigin="use-credentials"
-        ></audio>
         <div className="flex justify-between pl-16 pr-16 max-w-screen-screen2 ml-auto mr-auto">
           <div className="flex flex-col justify-center max-w-[600px] w-[calc(100%-48px)] cursor-pointer">
             {currentTrack && (

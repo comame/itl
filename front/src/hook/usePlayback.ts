@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { track } from "../type/track";
 import { useTracks } from "./useTracks";
 import {
@@ -19,9 +19,16 @@ type ret = {
   playing: boolean;
   resume: () => void;
   pause: () => void;
+  setVolume: (volume: number) => void;
 };
 
+const audioEl = document.getElementById("audio") as HTMLAudioElement;
+
 export function usePlayback(): ret {
+  if (!audioEl) {
+    throw "<audio> がない";
+  }
+
   useEffect(() => {
     loadQueue();
   }, []);
@@ -30,6 +37,7 @@ export function usePlayback(): ret {
 
   const tracks = useTracks();
 
+  // MediaSession の再生状態の変更を反映する
   useEffect(() => {
     navigator.mediaSession.setActionHandler("pause", () => {
       retObj.pause();
@@ -40,15 +48,29 @@ export function usePlayback(): ret {
     navigator.mediaSession.setActionHandler("play", () => {
       retObj.resume();
     });
+
+    return () => {
+      navigator.mediaSession.setActionHandler("pause", null);
+      navigator.mediaSession.setActionHandler("stop", null);
+      navigator.mediaSession.setActionHandler("play", null);
+    };
   });
 
-  const setupMetadata = () => {
-    const id = queueStore.queue[queueStore.position];
-    const track = tracks.find((v) => v.PersistentID === id);
-    if (!track) {
-      return;
+  // 再生する。src が異なる場合はその音源を再生する
+  const playTrack = (track: track) => {
+    const src = getEndpointURL("/api/track/" + track.PersistentID);
+    if (audioEl.src !== src) {
+      audioEl.src = src;
     }
+    audioEl.play();
+  };
 
+  const pauseTrack = () => {
+    audioEl.pause();
+  };
+
+  // track 情報を MediaSession に表示する
+  const setSessionMetadata = (track: track) => {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: track.Name,
       artist: track.Artist,
@@ -61,6 +83,45 @@ export function usePlayback(): ret {
       ],
     });
   };
+
+  // audioEl の再生状態を queueStore と mediaSession に同期する
+  useEffect(() => {
+    const lp = () => {
+      console.log("play");
+      queueStore.playing = true;
+      navigator.mediaSession.playbackState = "playing";
+      queueStore.dispatch();
+    };
+    const le = () => {
+      console.log("pause");
+      queueStore.playing = false;
+      navigator.mediaSession.playbackState = "paused";
+      queueStore.dispatch();
+    };
+    audioEl.addEventListener("play", lp);
+    audioEl.addEventListener("pause", le);
+    return () => {
+      audioEl.removeEventListener("play", lp);
+      audioEl.removeEventListener("pause", le);
+    };
+  }, []);
+
+  const [position, setPosition] = useState(0);
+
+  useEffect(() => {
+    const l = () => {
+      // TODO: なんかものすごい勢いで飛ぶ
+      console.log("ended or error");
+      retObj.setPosition(queueStore.position + 1);
+      retObj.resume();
+    };
+    audioEl.addEventListener("ended", l);
+    audioEl.addEventListener("error", l);
+    return () => {
+      audioEl.removeEventListener("ended", l);
+      audioEl.removeEventListener("error", l);
+    };
+  }, []);
 
   const retObj = {
     addQueue(...trackIDs: string[]) {
@@ -95,21 +156,23 @@ export function usePlayback(): ret {
         queueStore.position = i;
       }
       queueStore.dispatch();
-      setupMetadata();
       saveQueue();
     },
     get playing() {
       return queueStore.playing;
     },
     resume() {
-      queueStore.playing = true;
-      navigator.mediaSession.playbackState = "playing";
+      const id = queueStore.queue[queueStore.position];
+      const track = tracks.find((t) => t.PersistentID === id);
+      if (!track) {
+        return;
+      }
+      playTrack(track);
+      setSessionMetadata(track);
       queueStore.dispatch();
-      setupMetadata();
     },
     pause() {
-      queueStore.playing = false;
-      navigator.mediaSession.playbackState = "paused";
+      pauseTrack();
       queueStore.dispatch();
     },
     removeFromQueue(p: number) {
@@ -121,10 +184,13 @@ export function usePlayback(): ret {
         queueStore.position -= 1;
       }
 
+      if (curp === p) {
+        retObj.resume();
+      }
+
       if (queueStore.queue.length === 0) {
-        queueStore.position = 0;
-        queueStore.playing = false;
-        navigator.mediaSession.playbackState = "paused";
+        pauseTrack();
+        retObj.setPosition(0);
       }
 
       queueStore.dispatch();
@@ -132,11 +198,13 @@ export function usePlayback(): ret {
     },
     clearQueue() {
       queueStore.queue = [];
-      queueStore.position = 0;
-      queueStore.playing = false;
-      navigator.mediaSession.playbackState = "paused";
+      retObj.setPosition(0);
+      pauseTrack();
       queueStore.dispatch();
       saveQueue();
+    },
+    setVolume(volume: number) {
+      audioEl.volume = volume / 100;
     },
   };
 
