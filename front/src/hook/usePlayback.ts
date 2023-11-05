@@ -32,21 +32,18 @@ export function usePlayback(): ret {
 
   useEffect(() => {
     navigator.mediaSession.setActionHandler("pause", () => {
-      queueStore.setPlayState(false);
-      navigator.mediaSession.playbackState = "paused";
+      retObj.pause();
     });
     navigator.mediaSession.setActionHandler("stop", () => {
-      queueStore.setPlayState(false);
-      navigator.mediaSession.playbackState = "paused";
+      retObj.pause();
     });
     navigator.mediaSession.setActionHandler("play", () => {
-      queueStore.setPlayState(true);
-      navigator.mediaSession.playbackState = "playing";
+      retObj.resume();
     });
   });
 
   const setupMetadata = () => {
-    const id = queueStore.get()[queueStore.getPosition()];
+    const id = queueStore.queue[queueStore.position];
     const track = tracks.find((v) => v.PersistentID === id);
     if (!track) {
       return;
@@ -65,23 +62,21 @@ export function usePlayback(): ret {
     });
   };
 
-  return {
-    addQueue(...trackIDs) {
+  const retObj = {
+    addQueue(...trackIDs: string[]) {
       trackIDs = trackIDs.filter(
         (v) =>
           !isChromeIncompatible(
             tracks.find((tf) => tf.PersistentID === v) ?? null
           )
       );
-      for (const id of trackIDs) {
-        queueStore.add(id);
-      }
+      queueStore.queue = [...queueStore.queue, ...trackIDs];
+      queueStore.dispatch();
       saveQueue();
     },
     get queue() {
-      const ids = queueStore.get();
       const res: track[] = [];
-      for (const id of ids) {
+      for (const id of queueStore.queue) {
         const t = tracks.find((v) => v.PersistentID === id);
         if (!t) {
           continue;
@@ -91,94 +86,68 @@ export function usePlayback(): ret {
       return res;
     },
     get position() {
-      return queueStore.getPosition();
+      return queueStore.position;
     },
-    setPosition(i) {
-      queueStore.setPosition(i);
+    setPosition(i: number) {
+      if (i >= queueStore.queue.length) {
+        queueStore.position = 0;
+      } else {
+        queueStore.position = i;
+      }
+      queueStore.dispatch();
       setupMetadata();
       saveQueue();
     },
     get playing() {
-      return queueStore.getPlayState();
+      return queueStore.playing;
     },
     resume() {
-      queueStore.setPlayState(true);
+      queueStore.playing = true;
       navigator.mediaSession.playbackState = "playing";
+      queueStore.dispatch();
       setupMetadata();
     },
     pause() {
-      queueStore.setPlayState(false);
+      queueStore.playing = false;
       navigator.mediaSession.playbackState = "paused";
+      queueStore.dispatch();
     },
     removeFromQueue(p: number) {
-      const curp = queueStore._position;
+      const curp = queueStore.position;
 
-      queueStore._queue.splice(p, 1);
+      queueStore.queue.splice(p, 1);
 
       if (curp > p) {
-        queueStore._position -= 1;
+        queueStore.position -= 1;
       }
 
-      if (queueStore._queue.length === 0) {
-        queueStore._position = 0;
-        queueStore.setPlayState(false);
+      if (queueStore.queue.length === 0) {
+        queueStore.position = 0;
+        queueStore.playing = false;
         navigator.mediaSession.playbackState = "paused";
       }
 
-      queueStore._dispatch();
+      queueStore.dispatch();
       saveQueue();
     },
     clearQueue() {
-      queueStore._queue = [];
-      queueStore._position = 0;
-      queueStore.setPlayState(false);
+      queueStore.queue = [];
+      queueStore.position = 0;
+      queueStore.playing = false;
       navigator.mediaSession.playbackState = "paused";
-      queueStore._dispatch();
+      queueStore.dispatch();
       saveQueue();
     },
   };
+
+  return retObj;
 }
 
 const queueStore = {
-  _queue: [] as string[],
-  _position: 0,
+  queue: [] as string[],
+  position: 0,
+  playing: false,
   _listeners: [] as (() => unknown)[],
-  _playing: false,
-
-  set(trackIDs: string[]) {
-    queueStore._queue = trackIDs;
-    if (queueStore._position >= queueStore._queue.length) {
-      queueStore._position = 0;
-    }
-    queueStore._dispatch();
-  },
-  add(trackID: string) {
-    queueStore._queue = [...queueStore._queue, trackID];
-    queueStore._dispatch();
-  },
-  get() {
-    return queueStore._queue;
-  },
-
-  setPosition(i: number) {
-    if (i >= queueStore._queue.length) {
-      queueStore._position = 0;
-    } else {
-      queueStore._position = i;
-    }
-    queueStore._dispatch();
-  },
-  getPosition() {
-    return queueStore._position;
-  },
-
-  getPlayState(): boolean {
-    return queueStore._playing;
-  },
-  setPlayState(b: boolean) {
-    queueStore._playing = b;
-    queueStore._dispatch();
-  },
 
   subscribe(listener: () => unknown) {
     queueStore._listeners = [...queueStore._listeners, listener];
@@ -190,11 +159,11 @@ const queueStore = {
   },
   getSnapshot() {
     return (
-      queueStore._queue.toString() + queueStore._position + queueStore._playing
+      queueStore.queue.toString() + queueStore.position + queueStore.playing
     );
   },
 
-  _dispatch() {
+  dispatch() {
     for (const l of queueStore._listeners) {
       l();
     }
@@ -203,8 +172,8 @@ const queueStore = {
 
 function saveQueue() {
   const data = {
-    q: queueStore._queue,
-    p: queueStore._position,
+    q: queueStore.queue,
+    p: queueStore.position,
   };
   localStorage.setItem("queue", JSON.stringify(data));
 }
@@ -215,6 +184,6 @@ function loadQueue() {
     return;
   }
   const d = JSON.parse(s);
-  queueStore._queue = d.q;
-  queueStore._position = d.p;
+  queueStore.queue = d.q;
+  queueStore.position = d.p;
 }
