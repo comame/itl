@@ -3,7 +3,7 @@ SHELL=/bin/bash
 include .env
 export
 
-.PHONY: build dev
+.PHONY: build dev dev-setup
 
 build:
 	rm -rf front/dist
