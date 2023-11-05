@@ -54,8 +54,7 @@ export function TrackList({ tracks, showAlbum, controlQueue }: props) {
       <tbody>
         {tracks.map((tr, i) => (
           <tr
-            // キューの時、キーとして適切なものが存在しない
-            key={!controlQueue ? tr.PersistentID : undefined}
+            key={!controlQueue ? tr.PersistentID : `${i}:${tr.PersistentID}`}
             onClick={() => onClickTrack(tr.PersistentID, i)}
             onContextMenu={(e) => onContextTrack(e, i)}
             className="[line-height:2] odd:bg-background2 cursor-pointer hover:bg-background2-hover active:bg-background2-press"
