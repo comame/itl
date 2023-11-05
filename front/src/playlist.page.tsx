@@ -12,14 +12,19 @@ export default function Playlist() {
   const allTracks = useTracks();
 
   const p = useParam();
-  const playlist = playlists.find((pl) => pl.PersistentID === p["id"])!;
+  const { addQueue, resume } = usePlayback();
+  const { save } = useOffline();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const playlist = playlists.find((pl) => pl.PersistentID === p["id"]);
+  if (!playlist) {
+    return <div>Loading...</div>;
+  }
 
   const tracks =
     (playlist.ItemTrackIDs?.map((id) =>
       allTracks.find((t) => t.ID === id)
     ).filter((v) => typeof v !== "undefined") as track[]) ?? [];
-
-  const { addQueue, resume } = usePlayback();
 
   const onClickArtwork = () => {
     const ids = tracks.map((v) => v.PersistentID);
@@ -27,9 +32,6 @@ export default function Playlist() {
     resume();
   };
 
-  const { save } = useOffline();
-
-  const [isDownloading, setIsDownloading] = useState(false);
   const onDownloadClick = async () => {
     if (isDownloading) {
       return;

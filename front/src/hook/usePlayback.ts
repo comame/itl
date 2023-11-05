@@ -47,7 +47,10 @@ export function usePlayback(): ret {
 
   const setupMetadata = () => {
     const id = queueStore.get()[queueStore.getPosition()];
-    const track = tracks.find((v) => v.PersistentID === id)!;
+    const track = tracks.find((v) => v.PersistentID === id);
+    if (!track) {
+      return;
+    }
 
     navigator.mediaSession.metadata = new MediaMetadata({
       title: track.Name,
@@ -66,7 +69,9 @@ export function usePlayback(): ret {
     addQueue(...trackIDs) {
       trackIDs = trackIDs.filter(
         (v) =>
-          !isChromeIncompatible(tracks.find((tf) => tf.PersistentID === v)!)
+          !isChromeIncompatible(
+            tracks.find((tf) => tf.PersistentID === v) ?? null
+          )
       );
       for (const id of trackIDs) {
         queueStore.add(id);
@@ -78,7 +83,10 @@ export function usePlayback(): ret {
       const res: track[] = [];
       for (const id of ids) {
         const t = tracks.find((v) => v.PersistentID === id);
-        res.push(t!);
+        if (!t) {
+          continue;
+        }
+        res.push(t);
       }
       return res;
     },
