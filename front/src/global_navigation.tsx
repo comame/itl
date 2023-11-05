@@ -9,10 +9,15 @@ export function GlobalNavigation() {
 
   const [offline, setOffline] = useState(!navigator.onLine);
   useEffect(() => {
-    const id = setInterval(() => {
+    const l = () => {
       setOffline(!navigator.onLine);
-    }, 1000);
-    return () => clearInterval(id);
+    };
+    window.addEventListener("online", l);
+    window.addEventListener("offline", l);
+    return () => {
+      window.addEventListener("online", l);
+      window.addEventListener("offline", l);
+    };
   }, []);
 
   return (

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import { createRoot } from "react-dom/client";
 import {
   createBrowserRouter,
@@ -7,8 +7,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
-import { useJSONAPI } from "./hook/useAPI";
-import { getPlaylists, getTracks } from "./api";
+import { getClient, getPlaylists, getTracks } from "./api";
 
 import Albums from "./albums.page";
 import Playlists from "./playlists.page";
@@ -23,6 +22,9 @@ import Settings from "./settings.page";
 import { ErrorBoundary, RouterErrorBoundary } from "./error_boundary";
 import { GlobalNavigation } from "./global_navigation";
 import { PlaybackControl } from "./playback_control";
+import { track } from "./type/track";
+import { playlist } from "./type/playlist";
+import { useOffline } from "./hook/useOffline";
 
 declare global {
   export namespace JSX {
@@ -88,12 +90,57 @@ function Page() {
     },
   ]);
 
-  const [tracks, errTracks] = useJSONAPI(getTracks);
-  const [playlists, errPlaylists] = useJSONAPI(getPlaylists);
+  const [tracks, setTracks] = useState<track[]>([]);
+  const [playlists, setPlaylists] = useState<playlist[]>([]);
 
-  if (errTracks || errPlaylists) {
-    return <div>Failed to load library</div>;
-  }
+  useEffect(() => {
+    fetchTracks();
+  }, []);
+
+  useEffect(() => {
+    fetchPlaylists();
+  }, []);
+
+  const fetchTracks = async () => {
+    const res = await getTracks(getClient());
+    setTracks(res);
+  };
+
+  const fetchPlaylists = async () => {
+    const res = await getPlaylists(getClient());
+    setPlaylists(res);
+  };
+
+  const { cachedTrackIDs } = useOffline();
+
+  // オフライン時、キャッシュ済みのトラックのみを表示させる
+  useEffect(() => {
+    const l = () => {
+      if (navigator.onLine) {
+        fetchTracks();
+        fetchPlaylists();
+        return;
+      }
+      setTracks(tracks.filter((t) => cachedTrackIDs.includes(t.PersistentID)));
+
+      const ids = cachedTrackIDs
+        .map((p) => tracks.find((t) => t.PersistentID === p))
+        .filter((t) => typeof t !== "undefined")
+        .map((t) => t!.ID);
+
+      setPlaylists(
+        playlists.filter(
+          (p) => p.ItemTrackIDs?.some((tid) => ids.includes(tid)) ?? false
+        )
+      );
+    };
+    window.addEventListener("online", l);
+    window.addEventListener("offline", l);
+    return () => {
+      window.removeEventListener("online", l);
+      window.removeEventListener("offline", l);
+    };
+  }, [cachedTrackIDs]);
 
   return (
     <React.StrictMode>
