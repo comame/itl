@@ -43,13 +43,18 @@ function fetchHandler(e) {
     return;
   }
 
+  const pathname = new URL(req.url).pathname;
+
+  // ログイン部分はキャッシュ不可能
+  if (pathname.startsWith("/__idproxy")) {
+    return;
+  }
+
   // オフライン時、すべてをキャッシュから読む
   if (!navigator.onLine) {
     e.respondWith(requestWithCache(req));
     return;
   }
-
-  const pathname = new URL(req.url).pathname;
 
   // API レスポンスはキャッシュから返す
   if (pathname.startsWith("/api")) {
