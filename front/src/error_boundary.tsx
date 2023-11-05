@@ -15,6 +15,7 @@ export class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: any, info: any) {
+    localStorage.removeItem("queue");
     console.error(error, info);
   }
 
@@ -28,5 +29,6 @@ export class ErrorBoundary extends React.Component<
 
 export function RouterErrorBoundary() {
   const err = useRouteError();
+  localStorage.removeItem("queue");
   return <div>ERROR {err?.toString?.()}</div>;
 }
