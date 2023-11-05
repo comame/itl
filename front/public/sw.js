@@ -22,6 +22,21 @@ async function requestWithCache(req) {
 
 /**
  * @param {Request} req
+ * @returns {Promise<response>}
+ */
+async function handleIndexRequest(req) {
+  const res = await fetch(req);
+
+  if (res.ok) {
+    const cr = res.clone();
+    caches.open("v1").then((cache) => cache.put(req.url, cr));
+  }
+
+  return res;
+}
+
+/**
+ * @param {Request} req
  * @return {Promise<void>}
  */
 async function updateCache(req) {
@@ -53,6 +68,12 @@ function fetchHandler(e) {
   // オフライン時、すべてをキャッシュから読む
   if (!navigator.onLine) {
     e.respondWith(requestWithCache(req));
+    return;
+  }
+
+  // index はログイン画面にリダイレクトすることがあるので、二重リクエストできない
+  if (pathname === "/") {
+    e.respondWith(handleIndexRequest(req));
     return;
   }
 
