@@ -1,5 +1,6 @@
 import { useEffect, useSyncExternalStore } from "react";
 import { getEndpointURL } from "../api";
+import { trackArtworkURL } from "../library";
 
 export function useOffline(): {
   cachedTrackIDs: string[];
@@ -36,6 +37,8 @@ export function useOffline(): {
       for (const id of trackIDs) {
         const u = getEndpointURL(`/api/track/${id}`);
         await fetch(u);
+        const a = trackArtworkURL(id);
+        await fetch(a);
       }
       await update();
       store.dispath();
