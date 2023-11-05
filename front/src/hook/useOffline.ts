@@ -5,6 +5,7 @@ import { trackArtworkURL } from "../library";
 export function useOffline(): {
   cachedTrackIDs: string[];
   save(trackIDs: string[]): Promise<void>;
+  update(): Promise<void>;
 } {
   useSyncExternalStore(store.subscribe, store.getSnapshot);
 
@@ -40,6 +41,10 @@ export function useOffline(): {
         const a = trackArtworkURL(id);
         await fetch(a);
       }
+      await update();
+      store.dispath();
+    },
+    async update(): Promise<void> {
       await update();
       store.dispath();
     },
