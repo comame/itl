@@ -3,13 +3,13 @@ import { createRoot } from "react-dom/client";
 import {
   createBrowserRouter,
   createHashRouter,
+  Outlet,
   RouterProvider,
 } from "react-router-dom";
 
 import { useJSONAPI } from "./hook/useAPI";
 import { getPlaylists, getTracks } from "./api";
 
-import Index from "./index.page";
 import Albums from "./albums.page";
 import Playlists from "./playlists.page";
 import Playlist from "./playlist.page";
@@ -21,6 +21,8 @@ import "@charcoal-ui/icons";
 import "./index.css";
 import Settings from "./settings.page";
 import { ErrorBoundary, RouterErrorBoundary } from "./error_boundary";
+import { GlobalNavigation } from "./global_navigation";
+import { PlaybackControl } from "./playback_control";
 
 declare global {
   export namespace JSX {
@@ -34,11 +36,25 @@ declare global {
   }
 }
 
+function RouteRoot() {
+  return (
+    <div className="mb-104 w-full bg-background1 mt-24">
+      <div className="mb-16 ml-8">
+        <GlobalNavigation />
+      </div>
+
+      <Outlet />
+
+      <PlaybackControl />
+    </div>
+  );
+}
+
 function Page() {
   const router = createHashRouter([
     {
       path: "",
-      element: <Index />,
+      element: <RouteRoot />,
       errorElement: <RouterErrorBoundary />,
       children: [
         {
