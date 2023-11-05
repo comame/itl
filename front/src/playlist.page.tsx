@@ -35,9 +35,7 @@ export default function Playlist() {
       return;
     }
     setIsDownloading(true);
-    for (const tr of tracks) {
-      await save(tr.PersistentID);
-    }
+    await save(tracks.map((v) => v.PersistentID));
     setIsDownloading(false);
   };
 
