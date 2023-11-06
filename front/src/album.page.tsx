@@ -20,6 +20,9 @@ export default function Album() {
 
   const { addQueue, resume } = usePlayback();
 
+  const { save } = useOffline();
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const album = tracksByAlbum.find((v) => v.id == p["id"]);
   if (!album) {
     return <div>Not Found</div>;
@@ -31,9 +34,6 @@ export default function Album() {
     resume();
   };
 
-  const { save } = useOffline();
-
-  const [isDownloading, setIsDownloading] = useState(false);
   const onDownloadClick = async () => {
     if (isDownloading) {
       return;
