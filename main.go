@@ -246,9 +246,8 @@ func allowCORSForDev(w http.ResponseWriter) {
 }
 
 // iTunes Music Library.xml の Location を SMB のパスに変換する
-// FIXME: 自分の環境でしか動作しない
 func convLocation(p string) (string, error) {
-	prefix := "file://localhost/C:/Users/comame/Music/iTunes"
+	prefix := os.Getenv("ITUNES_LOCATION_PREFIX")
 	p = "." + p[len(prefix):]
 	p = strings.ReplaceAll(p, "+", "%2B")
 	p, err := url.QueryUnescape(p)

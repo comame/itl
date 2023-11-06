@@ -28,6 +28,7 @@ iTunes のライブラリを Windows から読みだして、Web で聴けるよ
   - `SMB_USER`: Windows のユーザー名
   - `SMB_PASSWORD`: Windows のパスワード
   - `SMB_SHARENAME`: iTunes のライブラリフォルダの共有名
+  - `ITUNES_LOCATION_PREFIX`: `iTunes Music Library.xml` の存在するファイルパス
 
 - 以下のコマンドを実行する
 
