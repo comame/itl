@@ -1,3 +1,5 @@
+// キュー、音声の再生状態を管理する。
+
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { track } from "../type/track";
 import { useTracks } from "./useTracks";
@@ -26,6 +28,7 @@ export function usePlayback(): ret {
 
   const tracks = useTracks();
 
+  // キューにトラックを追加し、更新通知する
   const addQueue = (...trackIDs: string[]) => {
     console.log(tracks.length);
     trackIDs = trackIDs.filter(
@@ -39,6 +42,7 @@ export function usePlayback(): ret {
     saveQueue();
   };
 
+  // キュー内の再生しているトラックのインデックスを変更し、更新通知する
   const setPosition = (i: number) => {
     if (i >= queueStore.queue.length) {
       queueStore.position = 0;
@@ -49,6 +53,7 @@ export function usePlayback(): ret {
     saveQueue();
   };
 
+  // 現在のキューを再生開始し、更新通知する
   const resume = useCallback(() => {
     const id = queueStore.queue[queueStore.position];
     const track = tracks.find((t) => t.PersistentID === id);
@@ -61,11 +66,14 @@ export function usePlayback(): ret {
     queueStore.dispatch();
   }, [tracks]);
 
+  // 再生を一時停止し、更新通知する
   const pause = useCallback(() => {
     pauseTrack();
     queueStore.dispatch();
   }, []);
 
+  // 指定したインデックスのキューを削除し、更新通知する
+  // 再生中のトラックだったとき、自動的に次のトラックを再生する。キューが空になったとき、再生停止する。
   const removeFromQueue = (p: number) => {
     const curp = queueStore.position;
 
@@ -88,6 +96,7 @@ export function usePlayback(): ret {
     saveQueue();
   };
 
+  // キューを空にし、再生停止する
   const clearQueue = () => {
     queueStore.queue = [];
     setPosition(0);
@@ -96,10 +105,12 @@ export function usePlayback(): ret {
     saveQueue();
   };
 
+  // 音量を変更する
   const setVolume = (volume: number) => {
     audioEl.volume = volume / 100;
   };
 
+  // localStorage に保存したキューを呼び出す
   useEffect(() => {
     loadQueue();
   }, []);
