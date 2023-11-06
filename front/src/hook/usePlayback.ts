@@ -9,6 +9,7 @@ import { getEndpointURL } from "../api";
 type ret = {
   addQueue: (...trackIDs: string[]) => void;
   removeFromQueue: (position: number) => void;
+  rearrange: (a: number, b: number) => void;
   clearQueue: () => void;
   setPosition: (i: number) => void;
   queue: track[];
@@ -108,6 +109,26 @@ export function usePlayback(): ret {
   // 音量を変更する
   const setVolume = (volume: number) => {
     audioEl.volume = volume / 100;
+  };
+
+  const rearrange = (target: number, to: number) => {
+    const queue = [...queueStore.queue];
+    const p = queueStore.position;
+
+    if (target === p) {
+      queueStore.position = to;
+    } else if (target > p && p >= to) {
+      queueStore.position += 1;
+    } else if (target < p && p <= to) {
+      queueStore.position -= 1;
+    }
+
+    const t = queue[target];
+    queue.splice(target, 1);
+    queueStore.queue = [...queue.slice(0, to), t, ...queue.slice(to)];
+
+    queueStore.dispatch();
+    saveQueue();
   };
 
   // localStorage に保存したキューを呼び出す
@@ -240,6 +261,7 @@ export function usePlayback(): ret {
     removeFromQueue,
     clearQueue,
     setVolume,
+    rearrange,
   };
 }
 

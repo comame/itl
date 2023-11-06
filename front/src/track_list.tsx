@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { usePlayback } from "./hook/usePlayback";
 import { albumArtist, isChromeIncompatible, totalTimeInLocal } from "./library";
 import { track } from "./type/track";
@@ -11,8 +11,15 @@ type props = {
 };
 
 export function TrackList({ tracks, showAlbum, controlQueue }: props) {
-  const { addQueue, resume, position, queue, setPosition, removeFromQueue } =
-    usePlayback();
+  const {
+    addQueue,
+    resume,
+    position,
+    queue,
+    setPosition,
+    removeFromQueue,
+    rearrange,
+  } = usePlayback();
 
   const onClickTrack = (id: string, listIndex: number) => {
     if (controlQueue) {
@@ -37,6 +44,10 @@ export function TrackList({ tracks, showAlbum, controlQueue }: props) {
     (t) => t.PersistentID === queue[position]?.PersistentID
   );
 
+  const [dragStarted, setDragStarted] = useState(-1);
+  const [dragOver, setDragOver] = useState(-1);
+  const [dragging, setDragging] = useState(false);
+
   return (
     <table className="border-collapse w-full table-fixed">
       <thead>
@@ -56,7 +67,25 @@ export function TrackList({ tracks, showAlbum, controlQueue }: props) {
             key={!controlQueue ? tr.PersistentID : `${i}:${tr.PersistentID}`}
             onClick={() => onClickTrack(tr.PersistentID, i)}
             onContextMenu={(e) => onContextTrack(e, i)}
-            className="[line-height:2] odd:bg-background2 cursor-pointer hover:bg-background2-hover active:bg-background2-press"
+            className="[line-height:2] odd:bg-background2 cursor-pointer hover:bg-background2-hover active:bg-background2-press border-0 data-[dt=t]:border-t-2 data-[db=t]:border-b-2"
+            draggable={controlQueue}
+            data-dt={
+              dragging && dragOver === i && dragStarted > dragOver ? "t" : "f"
+            }
+            data-db={
+              dragging && dragOver === i && dragStarted < dragOver ? "t" : "f"
+            }
+            onDragStart={() => {
+              setDragging(true);
+              setDragStarted(i);
+            }}
+            onDragEnd={() => {
+              setDragging(false);
+              rearrange(dragStarted, dragOver);
+            }}
+            onDragOver={() => {
+              setDragOver(i);
+            }}
           >
             <td>{tr.TrackNumber}</td>
             <td>
