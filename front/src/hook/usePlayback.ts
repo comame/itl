@@ -33,7 +33,12 @@ export function usePlayback(): ret {
     loadQueue();
   }, []);
 
-  useSyncExternalStore(queueStore.subscribe, queueStore.getSnapshot);
+  const currentStore = useSyncExternalStore(
+    queueStore.subscribe,
+    queueStore.getSnapshot
+  );
+  // FIXME: さすがにアレなので直したい
+  const currentPosition = Number.parseInt(currentStore.split(":")[0], 10);
 
   const tracks = useTracks();
 
@@ -106,14 +111,12 @@ export function usePlayback(): ret {
     };
   }, []);
 
-  const [position, setPosition] = useState(0);
-
   useEffect(() => {
     const l = () => {
-      // TODO: なんかものすごい勢いで飛ぶ
       console.log("ended or error");
-      retObj.setPosition(queueStore.position + 1);
+      retObj.setPosition(currentPosition + 1);
       retObj.resume();
+      queueStore.dispatch();
     };
     audioEl.addEventListener("ended", l);
     audioEl.addEventListener("error", l);
@@ -121,7 +124,7 @@ export function usePlayback(): ret {
       audioEl.removeEventListener("ended", l);
       audioEl.removeEventListener("error", l);
     };
-  }, []);
+  }, [currentPosition]);
 
   const retObj = {
     addQueue(...trackIDs: string[]) {
@@ -226,9 +229,7 @@ const queueStore = {
     };
   },
   getSnapshot() {
-    return (
-      queueStore.queue.toString() + queueStore.position + queueStore.playing
-    );
+    return `${queueStore.position}:${queueStore.playing}:${queueStore.queue}`;
   },
 
   dispatch() {
