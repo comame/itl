@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { track } from "../type/track";
 import { useTracks } from "./useTracks";
 import { isChromeIncompatible, trackArtworkURL } from "../library";
@@ -24,6 +24,8 @@ export function usePlayback(): ret {
     throw "<audio> がない";
   }
 
+  const tracks = useTracks();
+
   const addQueue = (...trackIDs: string[]) => {
     console.log(tracks.length);
     trackIDs = trackIDs.filter(
@@ -36,6 +38,7 @@ export function usePlayback(): ret {
     queueStore.dispatch();
     saveQueue();
   };
+
   const setPosition = (i: number) => {
     if (i >= queueStore.queue.length) {
       queueStore.position = 0;
@@ -45,7 +48,8 @@ export function usePlayback(): ret {
     queueStore.dispatch();
     saveQueue();
   };
-  const resume = () => {
+
+  const resume = useCallback(() => {
     const id = queueStore.queue[queueStore.position];
     const track = tracks.find((t) => t.PersistentID === id);
     if (!track) {
@@ -55,11 +59,13 @@ export function usePlayback(): ret {
     playTrack(track);
     setSessionMetadata(track);
     queueStore.dispatch();
-  };
-  const pause = () => {
+  }, [tracks]);
+
+  const pause = useCallback(() => {
     pauseTrack();
     queueStore.dispatch();
-  };
+  }, []);
+
   const removeFromQueue = (p: number) => {
     const curp = queueStore.position;
 
@@ -81,6 +87,7 @@ export function usePlayback(): ret {
     queueStore.dispatch();
     saveQueue();
   };
+
   const clearQueue = () => {
     queueStore.queue = [];
     setPosition(0);
@@ -88,6 +95,7 @@ export function usePlayback(): ret {
     queueStore.dispatch();
     saveQueue();
   };
+
   const setVolume = (volume: number) => {
     audioEl.volume = volume / 100;
   };
@@ -102,8 +110,6 @@ export function usePlayback(): ret {
   );
   // FIXME: さすがにアレなので直したい
   const currentPosition = Number.parseInt(currentStore.split(":")[0], 10);
-
-  const tracks = useTracks();
 
   // MediaSession の再生状態の変更を反映する
   useEffect(() => {
@@ -250,8 +256,6 @@ const queueStore = {
     }
   },
 };
-
-window.s = queueStore;
 
 function saveQueue() {
   const data = {

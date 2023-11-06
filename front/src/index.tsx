@@ -1,11 +1,6 @@
-import React, { useEffect, useState, useTransition } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import {
-  createBrowserRouter,
-  createHashRouter,
-  Outlet,
-  RouterProvider,
-} from "react-router-dom";
+import { createHashRouter, Outlet, RouterProvider } from "react-router-dom";
 
 import { getClient, getPlaylists, getTracks } from "./api";
 
@@ -27,6 +22,7 @@ import { playlist } from "./type/playlist";
 import { useOffline } from "./hook/useOffline";
 
 declare global {
+  /* eslint @typescript-eslint/no-namespace: 0 */
   export namespace JSX {
     interface IntrinsicElements {
       "pixiv-icon": {
@@ -140,7 +136,7 @@ function Page() {
       window.removeEventListener("online", l);
       window.removeEventListener("offline", l);
     };
-  }, [cachedTrackIDs]);
+  }, [cachedTrackIDs, playlists, tracks]);
 
   return (
     <React.StrictMode>

@@ -2,10 +2,10 @@ import React from "react";
 import { useRouteError } from "react-router-dom";
 
 export class ErrorBoundary extends React.Component<
-  React.PropsWithChildren<{}>,
+  React.PropsWithChildren<Record<never, never>>,
   { err: null | string }
 > {
-  constructor(props: React.PropsWithChildren<{}>) {
+  constructor(props: React.PropsWithChildren<Record<never, never>>) {
     super(props);
     this.state = { err: null };
   }

@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { getEndpointURL } from "../api";
 import { trackArtworkURL } from "../library";
 

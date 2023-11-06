@@ -5,10 +5,8 @@ import {
   albumArtworkURL,
   getGenres,
   splitByAlbum,
-  trackByAlbum,
 } from "./library";
-import React, { useState } from "react";
-import { GlobalNavigation } from "./global_navigation";
+import React from "react";
 import { useParam } from "./hook/useParam";
 
 export default function Albums() {

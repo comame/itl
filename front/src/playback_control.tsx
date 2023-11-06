@@ -1,6 +1,5 @@
-import { useRef, ReactEventHandler, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { usePlayback } from "./hook/usePlayback";
-import { getEndpointURL } from "./api";
 import { trackArtworkURL } from "./library";
 import { TrackList } from "./track_list";
 
@@ -9,16 +8,8 @@ export function PlaybackControl() {
   const [volume, setVolumeState] = useState(20);
   const [volumeWarned, setVolumeWarned] = useState(false);
 
-  const {
-    queue,
-    position,
-    setPosition,
-    playing,
-    pause,
-    resume,
-    clearQueue,
-    setVolume,
-  } = usePlayback();
+  const { queue, position, playing, pause, resume, clearQueue, setVolume } =
+    usePlayback();
 
   const currentTrack = position >= 0 ? queue[position] : null;
 
@@ -75,11 +66,8 @@ export function PlaybackControl() {
   // 音量の初期値を渡す
   useEffect(() => {
     setVolume(volume);
-  }, [volume]);
+  }, [volume, setVolume]);
 
-  const src = currentTrack
-    ? getEndpointURL("/api/track/" + currentTrack.PersistentID)
-    : undefined;
   const bgSrc = currentTrack
     ? trackArtworkURL(currentTrack.PersistentID)
     : undefined;
