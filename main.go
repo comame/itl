@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"log"
@@ -96,11 +97,20 @@ func main() {
 		}
 		defer f.Close()
 
+		// 実装の簡略化のため、すべて読み込む
+		b, err := io.ReadAll(f)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		typ := mime.TypeByExtension(path.Ext(loc))
 		w.Header().Set("Content-Type", typ)
-		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Accept-Ranges", "bytes")
+		w.Header().Set("Content-Length", fmt.Sprint(len(b)))
 
-		io.Copy(w, f)
+		w.Write(b)
 	})
 
 	var cachedTracks []track

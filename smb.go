@@ -8,7 +8,7 @@ import (
 	"github.com/hirochachacha/go-smb2"
 )
 
-// Windows から SMB で取得したファイルを表す。io.ReadCloser を実装する。
+// Windows から SMB で取得したファイルを表す。io.ReadSeekCloser を実装する。
 type winFile struct {
 	netCon  net.Conn
 	session *smb2.Session
@@ -18,6 +18,14 @@ type winFile struct {
 
 func (f *winFile) Read(p []byte) (n int, err error) {
 	n, err = f.file.Read(p)
+	if err != nil {
+		return 0, err
+	}
+	return n, nil
+}
+
+func (f *winFile) Seek(offset int64, whence int) (int64, error) {
+	n, err := f.file.Seek(offset, whence)
 	if err != nil {
 		return 0, err
 	}
@@ -45,7 +53,7 @@ func (f *winFile) Close() error {
 }
 
 // Windows からファイルを読み出す
-func openSMB(name string) (io.ReadCloser, error) {
+func openSMB(name string) (io.ReadSeekCloser, error) {
 	host := os.Getenv("SMB_HOST")
 	user := os.Getenv("SMB_USER")
 	password := os.Getenv("SMB_PASSWORD")
