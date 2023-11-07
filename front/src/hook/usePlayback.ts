@@ -171,10 +171,6 @@ export function usePlayback(): ret {
       nextTrack();
     });
 
-    navigator.mediaSession.setActionHandler("seekto", null);
-    navigator.mediaSession.setActionHandler("seekbackward", null);
-    navigator.mediaSession.setActionHandler("seekforward", null);
-
     return () => {
       navigator.mediaSession.setActionHandler("pause", null);
       navigator.mediaSession.setActionHandler("stop", null);
