@@ -9,6 +9,9 @@ export type trackByAlbum = {
   tracks: track[];
 };
 
+/**
+ * track をアルバムごとに分類する。アルバム名とアルバムアーティストが一致したとき、同じアルバムとみなす。
+ */
 export function splitByAlbum(tracks: track[]): trackByAlbum[] {
   const ta: trackByAlbum[] = [];
 
@@ -35,10 +38,14 @@ export function splitByAlbum(tracks: track[]): trackByAlbum[] {
   return ta;
 }
 
+/** トラックのアートワーク URL を返す。 */
 export function trackArtworkURL(id: string): string {
   return getEndpointURL("/api/artwork/" + id);
 }
 
+/**
+ * アルバムのアートワーク URL を返す。アルバムに含まれる最初のトラックのアートワークを返す。
+ */
 export function albumArtworkURL(lib: trackByAlbum[], albumID: string): string {
   const album = lib.find((v) => v.id === albumID);
   if (!album) {
@@ -51,6 +58,7 @@ export function albumArtworkURL(lib: trackByAlbum[], albumID: string): string {
   return getEndpointURL("/api/artwork/" + trid);
 }
 
+/** 秒数を 1:01 形式で返す。 */
 export function totalTimeInLocal(time: number): string {
   const st = Math.trunc(time / 1000);
   const m = Math.trunc(st / 60);
@@ -61,6 +69,7 @@ export function totalTimeInLocal(time: number): string {
   return `${m}:${ss}`;
 }
 
+/** トラックのアルバムアーティストまたはアーティストを返す。 */
 export function albumArtist(track: track): string {
   if (track.AlbumArtist != "") {
     return track.AlbumArtist;
@@ -68,6 +77,7 @@ export function albumArtist(track: track): string {
   return track.Artist;
 }
 
+/** Chrome で再生可能かどうかを返す。 */
 export function isChromeIncompatible(track: track | null): boolean {
   if (track === null) {
     return false;
@@ -78,6 +88,7 @@ export function isChromeIncompatible(track: track | null): boolean {
   return false;
 }
 
+/** ライブラリの中から特定のジャンルの曲を絞る。 */
 export function getGenres(tracks: track[]): string[] {
   const g = new Set<string>();
 

@@ -14,9 +14,9 @@ import "@charcoal-ui/icons";
 
 import "./index.css";
 import Settings from "./settings.page";
-import { ErrorBoundary, RouterErrorBoundary } from "./error_boundary";
-import { GlobalNavigation } from "./global_navigation";
-import { PlaybackControl } from "./playback_control";
+import { ErrorBoundary, RouterErrorBoundary } from "./component/error_boundary";
+import { GlobalNavigation } from "./component/global_navigation";
+import { PlaybackControl } from "./component/playback_control";
 import { track } from "./type/track";
 import { playlist } from "./type/playlist";
 import { useOffline } from "./hook/useOffline";

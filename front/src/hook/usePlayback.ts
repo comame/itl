@@ -1,5 +1,3 @@
-// キュー、音声の再生状態を管理する。
-
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { track } from "../type/track";
 import { useTracks } from "./useTracks";
@@ -26,6 +24,10 @@ if (!audioEl || audioEl.tagName !== "AUDIO") {
   throw "<audio> がない";
 }
 
+/**
+ * キュー、音声の再生状態を管理する。
+ * 実装方針として、再生状態は常に React の管理外にある `<audio>` を信頼し、React の持つ状態は `<audio>` から取得したものとする。
+ * */
 export function usePlayback(): ret {
   const tracks = useTracks();
 

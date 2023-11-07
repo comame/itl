@@ -4,7 +4,7 @@ import { useParam } from "./hook/useParam";
 import { usePlayback } from "./hook/usePlayback";
 import { usePlaylists, useTracks } from "./hook/useTracks";
 import { trackArtworkURL } from "./library";
-import { TrackList } from "./track_list";
+import { TrackList } from "./component/track_list";
 import { track } from "./type/track";
 
 export default function Playlist() {

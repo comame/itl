@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import { usePlayback } from "./hook/usePlayback";
-import { albumArtist, isChromeIncompatible, totalTimeInLocal } from "./library";
-import { track } from "./type/track";
-import { useOffline } from "./hook/useOffline";
+import { usePlayback } from "../hook/usePlayback";
+import {
+  albumArtist,
+  isChromeIncompatible,
+  totalTimeInLocal,
+} from "../library";
+import { track } from "../type/track";
+import { useOffline } from "../hook/useOffline";
 
 type props = {
   tracks: track[];

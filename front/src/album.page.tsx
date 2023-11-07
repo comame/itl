@@ -4,7 +4,7 @@ import { useParam } from "./hook/useParam";
 import { usePlayback } from "./hook/usePlayback";
 import { useTracks } from "./hook/useTracks";
 import { albumArtist, albumArtworkURL, splitByAlbum } from "./library";
-import { TrackList } from "./track_list";
+import { TrackList } from "./component/track_list";
 
 export default function Album() {
   const p = useParam();
