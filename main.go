@@ -97,7 +97,7 @@ func main() {
 		}
 		defer f.Close()
 
-		// 実装の簡略化のため、すべて読み込む
+		// Content-Length を楽にとるため、すべて読み込む
 		b, err := io.ReadAll(f)
 		if err != nil {
 			log.Println(err)
@@ -107,6 +107,7 @@ func main() {
 
 		typ := mime.TypeByExtension(path.Ext(loc))
 		w.Header().Set("Content-Type", typ)
+		// これらのヘッダーを返すとなぜか Chrome でもシークできるようになった、なんで？
 		w.Header().Set("Accept-Ranges", "bytes")
 		w.Header().Set("Content-Length", fmt.Sprint(len(b)))
 

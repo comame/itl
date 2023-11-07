@@ -75,15 +75,15 @@ export function usePlayback(): ret {
     queueStore.dispatch();
   }, []);
 
-  const nextTrack = () => {
+  const nextTrack = useCallback(() => {
     setPosition(queueStore.position + 1);
     resume();
-  };
+  }, [resume]);
 
-  const prevTrack = () => {
+  const prevTrack = useCallback(() => {
     setPosition(queueStore.position - 1);
     resume();
-  };
+  }, [resume]);
 
   // 指定したインデックスのキューを削除し、更新通知する
   // 再生中のトラックだったとき、自動的に次のトラックを再生する。キューが空になったとき、再生停止する。
@@ -178,13 +178,14 @@ export function usePlayback(): ret {
       navigator.mediaSession.setActionHandler("previoustrack", null);
       navigator.mediaSession.setActionHandler("nexttrack", null);
     };
-  }, [pause, resume]);
+  }, [pause, resume, nextTrack, prevTrack]);
 
   // 再生する。src が異なる場合はその音源を再生する
   const playTrack = (track: track) => {
     console.log("playTrack");
     const src = getEndpointURL("/api/track/" + track.PersistentID);
     if (audioEl.src !== src) {
+      console.log("start", track.Name, track.PersistentID);
       audioEl.src = src;
     }
     audioEl.play();
