@@ -20,13 +20,13 @@ type ret = {
   setVolume: (volume: number) => void;
 };
 
+// <audio> はReact で管理しない
 const audioEl = document.getElementById("audio") as HTMLAudioElement;
+if (!audioEl || audioEl.tagName !== "AUDIO") {
+  throw "<audio> がない";
+}
 
 export function usePlayback(): ret {
-  if (!audioEl) {
-    throw "<audio> がない";
-  }
-
   const tracks = useTracks();
 
   // キューにトラックを追加し、更新通知する
