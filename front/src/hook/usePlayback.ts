@@ -47,6 +47,8 @@ export function usePlayback(): ret {
   const setPosition = (i: number) => {
     if (i >= queueStore.queue.length) {
       queueStore.position = 0;
+    } else if (i < 0) {
+      queueStore.position = queueStore.queue.length - 1;
     } else {
       queueStore.position = i;
     }
@@ -72,6 +74,16 @@ export function usePlayback(): ret {
     pauseTrack();
     queueStore.dispatch();
   }, []);
+
+  const nextTrack = () => {
+    setPosition(queueStore.position + 1);
+    resume();
+  };
+
+  const prevTrack = () => {
+    setPosition(queueStore.position - 1);
+    resume();
+  };
 
   // 指定したインデックスのキューを削除し、更新通知する
   // 再生中のトラックだったとき、自動的に次のトラックを再生する。キューが空になったとき、再生停止する。
@@ -136,12 +148,7 @@ export function usePlayback(): ret {
     loadQueue();
   }, []);
 
-  const currentStore = useSyncExternalStore(
-    queueStore.subscribe,
-    queueStore.getSnapshot
-  );
-  // FIXME: さすがにアレなので直したい
-  const currentPosition = Number.parseInt(currentStore.split(":")[0], 10);
+  useSyncExternalStore(queueStore.subscribe, queueStore.getSnapshot);
 
   // MediaSession の再生状態の変更を反映する
   useEffect(() => {
@@ -157,11 +164,23 @@ export function usePlayback(): ret {
       console.log("mediaSession play");
       resume();
     });
+    navigator.mediaSession.setActionHandler("previoustrack", () => {
+      prevTrack();
+    });
+    navigator.mediaSession.setActionHandler("nexttrack", () => {
+      nextTrack();
+    });
+
+    navigator.mediaSession.setActionHandler("seekto", null);
+    navigator.mediaSession.setActionHandler("seekbackward", null);
+    navigator.mediaSession.setActionHandler("seekforward", null);
 
     return () => {
       navigator.mediaSession.setActionHandler("pause", null);
       navigator.mediaSession.setActionHandler("stop", null);
       navigator.mediaSession.setActionHandler("play", null);
+      navigator.mediaSession.setActionHandler("previoustrack", null);
+      navigator.mediaSession.setActionHandler("nexttrack", null);
     };
   }, [pause, resume]);
 
@@ -209,11 +228,23 @@ export function usePlayback(): ret {
       navigator.mediaSession.playbackState = "paused";
       queueStore.dispatch();
     };
+    const ltu = () => {
+      if (!Number.isFinite(audioEl.duration)) {
+        return;
+      }
+      navigator.mediaSession.setPositionState({
+        duration: audioEl.duration,
+        position: audioEl.currentTime,
+      });
+    };
+
     audioEl.addEventListener("play", lp);
     audioEl.addEventListener("pause", le);
+    audioEl.addEventListener("timeupdate", ltu);
     return () => {
       audioEl.removeEventListener("play", lp);
       audioEl.removeEventListener("pause", le);
+      audioEl.removeEventListener("timeupdate", ltu);
     };
   }, []);
 
@@ -234,7 +265,7 @@ export function usePlayback(): ret {
       audioEl.removeEventListener("ended", l);
       audioEl.removeEventListener("error", l);
     };
-  }, [currentPosition, resume]);
+  }, [resume]);
 
   return {
     get queue() {
