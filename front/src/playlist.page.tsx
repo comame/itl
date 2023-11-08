@@ -3,7 +3,7 @@ import { useOffline } from "./hook/useOffline";
 import { useParam } from "./hook/useParam";
 import { usePlayback } from "./hook/usePlayback";
 import { usePlaylists, useTracks } from "./hook/useTracks";
-import { trackArtworkURL } from "./library";
+import { trackArtworkURL } from "./lib/library";
 import { TrackList } from "./component/track_list";
 import { track } from "./type/track";
 

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { usePlaylists, useTracks } from "./hook/useTracks";
-import { trackArtworkURL } from "./library";
+import { trackArtworkURL } from "./lib/library";
 import { playlist } from "./type/playlist";
 
 export default function Playlists() {

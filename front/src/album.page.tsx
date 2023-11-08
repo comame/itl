@@ -3,7 +3,7 @@ import { useOffline } from "./hook/useOffline";
 import { useParam } from "./hook/useParam";
 import { usePlayback } from "./hook/usePlayback";
 import { useTracks } from "./hook/useTracks";
-import { albumArtist, albumArtworkURL, splitByAlbum } from "./library";
+import { albumArtist, albumArtworkURL, splitByAlbum } from "./lib/library";
 import { TrackList } from "./component/track_list";
 
 export default function Album() {

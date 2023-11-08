@@ -109,17 +109,6 @@ export default function Settings() {
   return (
     <div className="m-16">
       <div className="block">
-        ログインチェック{" "}
-        <button
-          className="font-bold"
-          onClick={() => {
-            location.href = "/logincheck";
-          }}
-        >
-          実行
-        </button>
-      </div>
-      <div className="block">
         Cache: アプリケーション{" "}
         <button className="font-bold" onClick={deleteCacheApplication}>
           実行
@@ -183,6 +172,12 @@ export default function Settings() {
       <h2 className="font-bold text-lg">ビルド時刻</h2>
       {/* @ts-expect-error import.meta で怒られる */}
       <p>{import.meta.env.VITE_TIME || "不明"}</p>
+
+      <h2 className="font-bold text-lg">GitHub</h2>
+      <p>
+        <a href="https://github.com/comame/itl-web">comame/itl-web</a>
+        <a />
+      </p>
     </div>
   );
 }

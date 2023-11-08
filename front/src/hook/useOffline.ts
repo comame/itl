@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { getEndpointURL } from "../api";
-import { trackArtworkURL } from "../library";
+import { trackArtworkURL } from "../lib/library";
 
 export function useOffline(): {
   cachedTrackIDs: string[];

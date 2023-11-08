@@ -1,5 +1,5 @@
-import { getEndpointURL } from "./api";
-import { track } from "./type/track";
+import { getEndpointURL } from "../api";
+import { track } from "../type/track";
 
 export type trackByAlbum = {
   id: string;
@@ -36,6 +36,11 @@ export function splitByAlbum(tracks: track[]): trackByAlbum[] {
   }
 
   return ta;
+}
+
+/** トラックの URL を返す。 */
+export function trackURL(id: string): string {
+  return getEndpointURL(`/api/track/${id}`);
 }
 
 /** トラックのアートワーク URL を返す。 */

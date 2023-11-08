@@ -5,7 +5,7 @@ import {
   albumArtworkURL,
   getGenres,
   splitByAlbum,
-} from "./library";
+} from "./lib/library";
 import React from "react";
 import { useParam } from "./hook/useParam";
 
