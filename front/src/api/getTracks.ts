@@ -1,5 +1,6 @@
-import { client } from "./apiClient";
 import { track } from "../type/track";
+
+import { client } from "./apiClient";
 
 type getTracksResponse = track[];
 

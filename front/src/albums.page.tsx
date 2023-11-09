@@ -1,4 +1,7 @@
+import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+
+import { useParam } from "./hook/useParam";
 import { useTracks } from "./hook/useTracks";
 import {
   albumArtist,
@@ -6,8 +9,6 @@ import {
   getGenres,
   splitByAlbum,
 } from "./lib/library";
-import React from "react";
-import { useParam } from "./hook/useParam";
 
 export default function Albums() {
   const p = useParam();

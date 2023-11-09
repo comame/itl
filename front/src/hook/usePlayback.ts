@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { track } from "../type/track";
-import { useTracks } from "./useTracks";
+
 import { loadQueue, store } from "../lib/audio";
+import { track } from "../type/track";
+
+import { useTracks } from "./useTracks";
 
 type ret = {
   addQueue: (...trackIDs: string[]) => void;

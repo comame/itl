@@ -1,3 +1,4 @@
+import { useOffline } from "../hook/useOffline";
 import { usePlayback } from "../hook/usePlayback";
 import {
   albumArtist,
@@ -5,7 +6,6 @@ import {
   totalTimeInLocal,
 } from "../lib/library";
 import { track } from "../type/track";
-import { useOffline } from "../hook/useOffline";
 
 type props = {
   tracks: track[];

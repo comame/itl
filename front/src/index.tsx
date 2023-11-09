@@ -2,24 +2,22 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { createHashRouter, Outlet, RouterProvider } from "react-router-dom";
 
-import { getClient, getPlaylists, getTracks } from "./api";
-
-import Albums from "./albums.page";
-import Playlists from "./playlists.page";
-import Playlist from "./playlist.page";
-import Album from "./album.page";
-import { PlaylistsContext, TracksContext } from "./hook/useTracks";
-
 import "@charcoal-ui/icons";
-
 import "./index.css";
-import Settings from "./settings.page";
+
+import Album from "./album.page";
+import Albums from "./albums.page";
+import { getClient, getPlaylists, getTracks } from "./api";
 import { ErrorBoundary, RouterErrorBoundary } from "./component/error_boundary";
 import { GlobalNavigation } from "./component/global_navigation";
 import { PlaybackControl } from "./component/playback_control";
-import { track } from "./type/track";
-import { playlist } from "./type/playlist";
 import { useOffline } from "./hook/useOffline";
+import { PlaylistsContext, TracksContext } from "./hook/useTracks";
+import Playlist from "./playlist.page";
+import Playlists from "./playlists.page";
+import Settings from "./settings.page";
+import { playlist } from "./type/playlist";
+import { track } from "./type/track";
 
 declare global {
   /* eslint @typescript-eslint/no-namespace: 0 */

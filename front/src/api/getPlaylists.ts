@@ -1,6 +1,6 @@
-import { client } from "./apiClient";
-
 import { playlist } from "../type/playlist";
+
+import { client } from "./apiClient";
 
 type getPlaylistsResponse = playlist[];
 
