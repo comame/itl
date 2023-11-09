@@ -36,7 +36,6 @@ export const store = {
     for (const cb of store._onQueueUpdateHandlers) {
       cb();
     }
-    saveQueue();
   },
   /** キューの再生位置を変更し、再生する */
   setPositionAndPlay(n: number) {
@@ -50,7 +49,6 @@ export const store = {
     for (const cb of store._onQueueUpdateHandlers) {
       cb();
     }
-    saveQueue();
   },
   /** キューから指定したインデックスの曲を取り除く */
   removeFromQueue(n: number) {
@@ -66,7 +64,6 @@ export const store = {
     for (const cb of store._onQueueUpdateHandlers) {
       cb();
     }
-    saveQueue();
   },
   /** キューを削除し、再生停止する */
   clearQueue() {
@@ -76,7 +73,6 @@ export const store = {
     for (const cb of store._onQueueUpdateHandlers) {
       cb();
     }
-    saveQueue();
   },
 
   // React との接続に使う
@@ -97,7 +93,12 @@ export const store = {
 
 // <audio> と MediaSession をつなぐ
 function connectMediaSession() {
+  const beforeunload = (e: BeforeUnloadEvent) => {
+    e.preventDefault();
+    e.returnValue = "";
+  };
   store.element.addEventListener("play", () => {
+    window.addEventListener("beforeunload", beforeunload);
     const track = store._tracks.find(
       (tr) => tr.PersistentID === store.queue[store.position]
     );
@@ -115,6 +116,9 @@ function connectMediaSession() {
       ],
       title: track.Name,
     });
+  });
+  store.element.addEventListener("pause", () => {
+    window.removeEventListener("beforeunload", beforeunload);
   });
   store.element.addEventListener("ended", () => {
     store.setPositionAndPlay(store.position + 1);
@@ -142,22 +146,3 @@ function connectMediaSession() {
 }
 
 connectMediaSession();
-
-function saveQueue() {
-  const data = {
-    q: store.queue,
-    p: store.position,
-  };
-  localStorage.setItem("queue", JSON.stringify(data));
-}
-
-/** LocalStorage から前回のキューを読み込む */
-export function loadQueue() {
-  const s = localStorage.getItem("queue");
-  if (!s) {
-    return;
-  }
-  const d = JSON.parse(s);
-  store.queue = d.q;
-  store.position = d.p;
-}

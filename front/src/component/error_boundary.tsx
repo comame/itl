@@ -1,5 +1,6 @@
 import React from "react";
 import { useRouteError } from "react-router-dom";
+import { clearPreference } from "../lib/preference";
 
 export class ErrorBoundary extends React.Component<
   React.PropsWithChildren<Record<never, never>>,
@@ -15,7 +16,7 @@ export class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: any, info: any) {
-    localStorage.removeItem("queue");
+    clearPreference();
     console.error(error, info);
   }
 
@@ -29,6 +30,6 @@ export class ErrorBoundary extends React.Component<
 
 export function RouterErrorBoundary() {
   const err = useRouteError();
-  localStorage.removeItem("queue");
+  clearPreference();
   return <div>ERROR {err?.toString?.()}</div>;
 }

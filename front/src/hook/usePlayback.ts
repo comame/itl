@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { loadQueue, store } from "../lib/audio";
+import { store } from "../lib/audio";
+import { loadPreference, savePreference } from "../lib/preference";
 import { track } from "../type/track";
 
 import { useTracks } from "./useTracks";
@@ -44,6 +45,10 @@ export function usePlayback(): ret {
     const f = () => {
       setDerivedPosition(store.position);
       setDerivedQueue(store.queue);
+      savePreference({
+        position: store.position,
+        queue: [...store.queue],
+      });
     };
     store.addOnQueueUpdate(f);
     return () => {
@@ -56,7 +61,9 @@ export function usePlayback(): ret {
       return;
     }
     console.log("load queue from localStorage");
-    loadQueue();
+    const p = loadPreference();
+    store.position = p.position;
+    store.queue = p.queue;
     setDerivedQueue(store.queue);
     setDerivedPosition(store.position);
   }, [tracks]);
