@@ -97,7 +97,6 @@ export const store = {
 // <audio> と MediaSession をつなぐ
 function connectMediaSession() {
   store.element.addEventListener("play", () => {
-    navigator.mediaSession.playbackState = "playing";
     const track = store._tracks.find(
       (tr) => tr.PersistentID === store.queue[store.position]
     );
@@ -116,27 +115,12 @@ function connectMediaSession() {
       title: track.Name,
     });
   });
-  store.element.addEventListener("pause", () => {
-    navigator.mediaSession.playbackState = "paused";
-  });
   store.element.addEventListener("ended", () => {
     store.setPositionAndPlay(store.position + 1);
   });
   store.element.addEventListener("error", (e) => {
     console.warn("再生に失敗", e.error);
     store.setPositionAndPlay(store.position + 1);
-  });
-  store.element.addEventListener("timeupdate", () => {
-    if (
-      !Number.isFinite(store.element.duration) ||
-      !Number.isFinite(store.element.currentTime)
-    ) {
-      return;
-    }
-    navigator.mediaSession.setPositionState({
-      duration: store.element.duration,
-      position: store.element.currentTime,
-    });
   });
 
   navigator.mediaSession.setActionHandler("play", () => {
