@@ -16,6 +16,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -97,8 +98,7 @@ func main() {
 		}
 		defer f.Close()
 
-		// Content-Length を楽にとるため、すべて読み込む
-		b, err := io.ReadAll(f)
+		st, err := f.Stat()
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -107,11 +107,38 @@ func main() {
 
 		typ := mime.TypeByExtension(path.Ext(loc))
 		w.Header().Set("Content-Type", typ)
-		// これらのヘッダーを返すとなぜか Chrome でもシークできるようになった、なんで？
 		w.Header().Set("Accept-Ranges", "bytes")
-		w.Header().Set("Content-Length", fmt.Sprint(len(b)))
 
-		w.Write(b)
+		rh := r.Header.Get("Range")
+		rb, re, err := parseRangeHeader(rh)
+		if err != nil {
+			log.Println(err)
+			w.Header().Set("Content-Length", fmt.Sprint(st.Size()))
+			io.Copy(w, f)
+			return
+		}
+
+		if rb < 0 {
+			log.Println("不正な Range")
+			w.Header().Set("Content-Length", fmt.Sprint(st.Size()))
+			io.Copy(w, f)
+			return
+		}
+
+		if re < 0 {
+			w.Header().Set("Content-Length", fmt.Sprint(st.Size()-int64(rb)))
+			w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", rb, st.Size()-1, st.Size()))
+			w.WriteHeader(http.StatusPartialContent)
+			f.Seek(int64(rb), io.SeekStart)
+			io.Copy(w, f)
+			return
+		}
+
+		w.Header().Set("Content-Length", fmt.Sprint(re-rb))
+		w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", rb, re-1, st.Size()))
+		w.WriteHeader(http.StatusPartialContent)
+		f.Seek(int64(rb), io.SeekStart)
+		io.Copy(w, f)
 	})
 
 	var cachedTracks []track
@@ -254,6 +281,32 @@ func extractArtworks(track track) (io.ReadCloser, error) {
 func allowCORSForDev(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
+}
+
+func parseRangeHeader(v string) (int, int, error) {
+	rp := regexp.MustCompile(`^bytes=(\d+)-(\d+)?$`)
+	fo := rp.FindAllStringSubmatch(v, 2)
+	if fo == nil {
+		return -1, -1, errors.New("unsupported or invalid format of range header")
+	}
+
+	sstr := fo[0][1]
+	estr := "-1"
+
+	if len(fo[0]) == 3 && fo[0][2] != "" {
+		estr = fo[0][2]
+	}
+
+	sint, err := strconv.ParseInt(sstr, 10, 64)
+	if err != nil {
+		return -1, -1, err
+	}
+	eint, err := strconv.ParseInt(estr, 10, 64)
+	if err != nil {
+		return -1, -1, err
+	}
+
+	return int(sint), int(eint), nil
 }
 
 // iTunes Music Library.xml の Location を SMB のパスに変換する

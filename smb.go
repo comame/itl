@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io"
 	"net"
 	"os"
 
@@ -52,8 +51,16 @@ func (f *winFile) Close() error {
 	return nil
 }
 
+func (f *winFile) Stat() (os.FileInfo, error) {
+	s, err := f.file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
+}
+
 // Windows からファイルを読み出す
-func openSMB(name string) (io.ReadSeekCloser, error) {
+func openSMB(name string) (*winFile, error) {
 	host := os.Getenv("SMB_HOST")
 	user := os.Getenv("SMB_USER")
 	password := os.Getenv("SMB_PASSWORD")

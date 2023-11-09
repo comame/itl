@@ -13,7 +13,7 @@ async function requestWithCache(req) {
   }
 
   const fr = await fetch(req.clone());
-  if (fr.ok) {
+  if (fr.status === 200) {
     cache.put(req.url, fr.clone());
   }
 
