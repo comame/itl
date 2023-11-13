@@ -112,7 +112,6 @@ func main() {
 		rh := r.Header.Get("Range")
 		rb, re, err := parseRangeHeader(rh)
 		if err != nil {
-			log.Println(err)
 			w.Header().Set("Content-Length", fmt.Sprint(st.Size()))
 			io.Copy(w, f)
 			return

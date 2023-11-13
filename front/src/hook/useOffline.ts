@@ -41,9 +41,9 @@ export function useOffline(): {
         await fetch(u);
         const a = trackArtworkURL(id);
         await fetch(a);
+        await update();
+        store.dispath();
       }
-      await update();
-      store.dispath();
     },
     async update(): Promise<void> {
       await update();
