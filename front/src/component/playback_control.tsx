@@ -8,7 +8,6 @@ import { TrackList } from "./track_list";
 export function PlaybackControl() {
   const [showControls, setShowControls] = useState(false);
   const [volume, setVolumeState] = useState(20);
-  const [volumeWarned, setVolumeWarned] = useState(false);
 
   const { queue, position, playing, pause, resume, clearQueue, setVolume } =
     usePlayback();
@@ -55,13 +54,6 @@ export function PlaybackControl() {
   };
 
   const changeVolume = (volume: number) => {
-    if (!volumeWarned && volume > 30) {
-      const ok = confirm("音量を上げますか？");
-      if (!ok) {
-        return;
-      }
-      setVolumeWarned(true);
-    }
     setVolumeState(volume);
   };
 
