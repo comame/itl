@@ -1,12 +1,13 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 import { getEndpointURL } from "../api";
 import { trackArtworkURL } from "../lib/library";
 
+const bc = new BroadcastChannel("cache_done");
+
 export function useOffline(): {
   cachedTrackIDs: string[];
   save(trackIDs: string[]): Promise<void>;
-  update(): Promise<void>;
 } {
   useSyncExternalStore(store.subscribe, store.getSnapshot);
 
@@ -30,6 +31,17 @@ export function useOffline(): {
     });
   }
 
+  useEffect(() => {
+    const f = () => {
+      update().then(() => {
+        store.dispath();
+      });
+    };
+
+    // 1度だけ受け取りたいので、addEventLister ではなく、onmessage に代入する
+    bc.onmessage = f;
+  }, []);
+
   return {
     get cachedTrackIDs() {
       return store.saved;
@@ -41,13 +53,7 @@ export function useOffline(): {
         await fetch(u);
         const a = trackArtworkURL(id);
         await fetch(a);
-        await update();
-        store.dispath();
       }
-    },
-    async update(): Promise<void> {
-      await update();
-      store.dispath();
     },
   };
 }

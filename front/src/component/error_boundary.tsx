@@ -1,5 +1,6 @@
 import React from "react";
 import { useRouteError } from "react-router-dom";
+
 import { clearPreference } from "../lib/preference";
 
 export class ErrorBoundary extends React.Component<

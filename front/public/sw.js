@@ -1,5 +1,7 @@
 self.addEventListener("install", (e) => e.waitUntil(self.skipWaiting()));
 
+const bc = new BroadcastChannel("cache_done");
+
 /**
  * @param {Request} req
  * @returns {Promise<Response>}
@@ -14,7 +16,9 @@ async function requestWithCache(req) {
 
   const fr = await fetch(req.clone());
   if (fr.status === 200) {
-    cache.put(req.url, fr.clone());
+    cache.put(req.url, fr.clone()).then(() => {
+      bc.postMessage(req.url);
+    });
   }
 
   return fr;
