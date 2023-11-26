@@ -163,7 +163,7 @@ export default function Settings() {
 
       <h2 className="font-bold text-lg">LocalStorage</h2>
       <textarea
-        value={localStorage.getItem("queue") ?? ""}
+        value={localStorage.getItem("music-v1") ?? ""}
         className="w-9/12 h-272 border-2 mr-auto ml-auto block"
       />
 
