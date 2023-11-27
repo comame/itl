@@ -1,6 +1,23 @@
 import { useEffect, useState } from "react";
 
 export default function Settings() {
+  const reloadLibrary = async () => {
+    const cache = await caches.open("v1");
+    const keys = await cache.keys();
+    const target = keys.filter((r) => {
+      const url = new URL(r.url);
+      return (
+        url.pathname === "/api/tracks" || url.pathname === "/api/playlists"
+      );
+    });
+
+    for (const u of target) {
+      await cache.delete(u);
+    }
+
+    location.reload();
+  };
+
   const deleteCacheApplication = async () => {
     if (!confirm("アプリケーションのキャッシュを削除？")) {
       return;
@@ -107,7 +124,17 @@ export default function Settings() {
   }, []);
 
   return (
-    <div className="m-16">
+    <div className="m-16 pt-16">
+      <button
+        onClick={reloadLibrary}
+        className="font-bold [line-height:2] border-2 rounded-8 pl-16 pr-16"
+      >
+        ライブラリの更新
+      </button>
+
+      <hr className="mt-16 mb-16" />
+
+      <h2 className="font-bold text-lg">高度な設定</h2>
       <div className="block">
         Cache: アプリケーション{" "}
         <button className="font-bold" onClick={deleteCacheApplication}>
