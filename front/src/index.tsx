@@ -35,7 +35,7 @@ declare global {
 function RouteRoot() {
   return (
     <div className="mb-104 w-full bg-background1 mt-24">
-      <div className="mb-16 ml-8">
+      <div className="mt-64 mb-16 ml-8">
         <GlobalNavigation />
       </div>
 
