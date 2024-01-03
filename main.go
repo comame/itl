@@ -218,6 +218,7 @@ func getLibrary() ([]track, []playlist, error) {
 	return tracks, playlists, nil
 }
 
+// TODO: なんか新しくライブラリに生えた曲のアートワークが404になる
 // track のアートワーク画像を返す。
 // 一度取得されたアートワークはファイルシステムにキャッシュされる。キャッシュがなければ SMB から音声ファイルを取得して、ffmpeg でアートワークを抽出する。
 func extractArtworks(track track) (io.ReadCloser, error) {
@@ -244,21 +245,16 @@ func extractArtworks(track track) (io.ReadCloser, error) {
 	// ... 作業フォルダを作り、
 	os.MkdirAll(".ar", 0777)
 
-	// ... オーディオファイルを開き、もしなければダウンロードし、
-	af, err := os.Open(".ar/" + afpath)
-	if errors.Is(err, os.ErrNotExist) {
-		cf, err := os.Create(".ar/" + afpath)
-		if err != nil {
-			return nil, err
-		}
-		if _, err := io.Copy(cf, f); err != nil {
-			return nil, err
-		}
-		if err := cf.Sync(); err != nil {
-			return nil, err
-		}
-		af = cf
-	} else if err != nil {
+	// ... オーディオファイルをダウンロードし、
+	log.Printf("download track %s to extract artwork", track.PersistentID)
+	af, err := os.Create(".ar/" + afpath)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := io.Copy(af, f); err != nil {
+		return nil, err
+	}
+	if err := af.Sync(); err != nil {
 		return nil, err
 	}
 	defer af.Close()
@@ -270,7 +266,7 @@ func extractArtworks(track track) (io.ReadCloser, error) {
 	// ... 抽出されたアートワークを開く。
 	pf, err := os.Open(".ar/" + afpath + ".jpg")
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(fmt.Errorf("failed to extract artwork of track id %s due to ffmpeg error", track.PersistentID), err)
 	}
 
 	return pf, nil
