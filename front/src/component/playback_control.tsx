@@ -72,12 +72,12 @@ export function PlaybackControl() {
         <>
           <div
             data-show={showControls ? "t" : "f"}
-            className="-z-10 opacity-0 data-[show=t]:block data-[show=t]:opacity-100 data-[show=t]:z-10 fixed top-0 left-0 bg-[rgba(0,0,0,0.6)] w-full h-[calc(30vh-128px)] transition-all [transition-property:opacity]"
+            className="-z-10 opacity-0 data-[show=t]:block data-[show=t]:opacity-100 data-[show=t]:z-10 fixed top-0 left-0 bg-[rgba(0,0,0,0.6)] w-full h-full transition-all [transition-property:opacity]"
             onClick={closeShowControl}
           ></div>
           <div
             data-show={showControls ? "t" : "f"}
-            className="fixed bottom-[calc(-100vh+64px)] data-[show=t]:bottom-64 left-0 w-full h-[calc(70vh+64px)] bg-background2 overflow-hidden transition-all"
+            className="fixed bottom-[calc(-100vh+64px)] data-[show=t]:bottom-64 left-0 w-full h-[calc(70vh+64px)] bg-background2 overflow-hidden transition-all z-10"
           >
             <div className="text-right max-w-screen-screen3 h-40 ml-auto mr-auto pl-16 pr-16 pt-8 ">
               <button className="font-bold " onClick={onClearQueue}>
@@ -105,7 +105,7 @@ export function PlaybackControl() {
         </>
       }
       <div
-        className="w-full h-64 bg-background2 fixed bottom-0 left-0"
+        className="w-full h-64 bg-background2 fixed bottom-0 left-0 z-10"
         style={
           !currentTrack
             ? {}
@@ -119,7 +119,7 @@ export function PlaybackControl() {
         onClick={toggleShowControl}
       >
         <div className="flex justify-between pl-16 pr-16 max-w-screen-screen2 ml-auto mr-auto">
-          <div className="flex flex-col justify-center max-w-[600px] w-[calc(100%-48px)] cursor-pointer">
+          <div className="flex flex-col justify-center max-w-[600px] w-[calc(100%-48px)] cursor-pointer select-none">
             {currentTrack && (
               <>
                 <span className="font-semibold text-lg whitespace-nowrap overflow-hidden overflow-ellipsis">

@@ -59,7 +59,7 @@ export function TrackList({ tracks, showAlbum, controlQueue }: props) {
             key={!controlQueue ? tr.PersistentID : `${i}:${tr.PersistentID}`}
             onClick={() => onClickTrack(tr.PersistentID, i)}
             onContextMenu={(e) => onContextTrack(e, i)}
-            className="[line-height:2] odd:bg-background2 cursor-pointer hover:bg-background2-hover active:bg-background2-press border-0"
+            className="[line-height:2] odd:bg-background2 cursor-pointer hover:bg-background2-hover active:bg-background2-press border-0 select-none"
           >
             <td>{tr.TrackNumber}</td>
             <td>
