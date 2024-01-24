@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 
 export default function Settings() {
+  const bc = new BroadcastChannel("cache_done");
+
   const reloadLibrary = async () => {
     const cache = await caches.open("v1");
     const keys = await cache.keys();
@@ -32,6 +34,8 @@ export default function Settings() {
     for (const u of target) {
       await c.delete(u);
     }
+
+    bc.postMessage("setting");
   };
 
   const deleteCacheLbraryMetadata = async () => {
@@ -50,6 +54,8 @@ export default function Settings() {
     for (const u of target) {
       await c.delete(u);
     }
+
+    bc.postMessage("setting");
   };
 
   const deleteCacheArtwork = async () => {
@@ -66,6 +72,8 @@ export default function Settings() {
     for (const u of target) {
       await c.delete(u);
     }
+
+    bc.postMessage("setting");
   };
 
   const deleteCacheTrack = async () => {
@@ -82,6 +90,8 @@ export default function Settings() {
     for (const u of target) {
       await c.delete(u);
     }
+
+    bc.postMessage("setting");
   };
 
   const deleteCacheAll = async () => {
@@ -89,6 +99,8 @@ export default function Settings() {
       return;
     }
     await caches.delete("v1");
+
+    bc.postMessage("setting");
   };
 
   const deleteLocalStorage = () => {
