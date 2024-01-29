@@ -47,30 +47,15 @@ export function useOffline(): {
       return store.saved;
     },
     async save(trackIDs: string[]) {
-      await cacheTrackInBackground(trackIDs);
+      // fetch すれば Service Worker でキャッシュされる
+      for (const id of trackIDs) {
+        const u = getEndpointURL(`/api/track/${id}`);
+        await fetch(u);
+        const a = trackArtworkURL(id);
+        await fetch(a);
+      }
     },
   };
-}
-
-async function cacheTrackInBackground(trackIDs: string[]) {
-  const urls: string[] = [];
-  for (const id of trackIDs) {
-    urls.push(getEndpointURL(`/api/track/${id}`), trackArtworkURL(id));
-  }
-
-  if (!("BackgroundFetchManager" in self)) {
-    for (const url of urls) {
-      await fetch(url);
-    }
-    return;
-  }
-
-  const reg = await navigator.serviceWorker.ready;
-
-  const fetchID = urls.join("\n");
-  await reg.backgroundFetch.fetch(fetchID, urls, {
-    title: "music.comame.xyz",
-  });
 }
 
 const store = {

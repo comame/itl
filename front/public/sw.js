@@ -92,26 +92,4 @@ function fetchHandler(e) {
   updateCache(req);
 }
 
-async function backgroundFetchSuccessHandler(e) {
-  /** @type {BackGroundFetchRegistration} */
-  const reg = e.registration;
-  const urls = reg.id.split("\n");
-
-  e.waitUntil(
-    (async () => {
-      const cache = await caches.open("v1");
-
-      for (const url of urls) {
-        const rec = await reg.match(url);
-        if (!rec) {
-          continue;
-        }
-        const res = await rec.responseReady;
-        await cache.put(rec.request, res);
-      }
-    })()
-  );
-}
-
 self.addEventListener("fetch", fetchHandler);
-self.addEventListener("backgroundfetchsuccess", backgroundFetchSuccessHandler);

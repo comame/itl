@@ -60,6 +60,7 @@ export function usePlayback(): ret {
     if (tracks.length === 0) {
       return;
     }
+    console.log("load queue from localStorage");
     const p = loadPreference();
     store.position = p.position;
     store.queue = p.queue;
