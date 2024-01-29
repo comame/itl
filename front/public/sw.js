@@ -109,8 +109,6 @@ async function backgroundFetchSuccessHandler(e) {
         const res = await rec.responseReady;
         await cache.put(rec.request, res);
       }
-
-      bc.postMessage("backgroundfetch done");
     })()
   );
 }

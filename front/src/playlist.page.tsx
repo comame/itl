@@ -38,10 +38,7 @@ export default function Playlist() {
       return;
     }
     setIsDownloading(true);
-    await save(
-      tracks.map((v) => v.PersistentID),
-      playlist.Name
-    );
+    await save(tracks.map((v) => v.PersistentID));
     setIsDownloading(false);
   };
 

@@ -34,10 +34,7 @@ export default function Album() {
       return;
     }
     setIsDownloading(true);
-    await save(
-      album.tracks.map((t) => t.PersistentID),
-      album.album
-    );
+    await save(album.tracks.map((t) => t.PersistentID));
     setIsDownloading(false);
   };
 

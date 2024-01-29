@@ -7,7 +7,7 @@ const bc = new BroadcastChannel("cache_done");
 
 export function useOffline(): {
   cachedTrackIDs: string[];
-  save(trackIDs: string[], downloadTitle: string): Promise<void>;
+  save(trackIDs: string[]): Promise<void>;
 } {
   useSyncExternalStore(store.subscribe, store.getSnapshot);
 
@@ -46,16 +46,13 @@ export function useOffline(): {
     get cachedTrackIDs() {
       return store.saved;
     },
-    async save(trackIDs: string[], downloadTitle: string) {
-      await cacheTrackInBackground(trackIDs, downloadTitle);
+    async save(trackIDs: string[]) {
+      await cacheTrackInBackground(trackIDs);
     },
   };
 }
 
-async function cacheTrackInBackground(
-  trackIDs: string[],
-  downloadTitle: string
-) {
+async function cacheTrackInBackground(trackIDs: string[]) {
   const urls: string[] = [];
   for (const id of trackIDs) {
     urls.push(getEndpointURL(`/api/track/${id}`), trackArtworkURL(id));
@@ -72,7 +69,7 @@ async function cacheTrackInBackground(
 
   const fetchID = urls.join("\n");
   await reg.backgroundFetch.fetch(fetchID, urls, {
-    title: downloadTitle,
+    title: "music.comame.xyz",
   });
 }
 
