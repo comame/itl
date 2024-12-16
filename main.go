@@ -17,6 +17,7 @@ import (
 	"os/exec"
 	"path"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -217,6 +218,8 @@ func getLibrary() ([]track, []playlist, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+
+	slices.Reverse(tracks)
 
 	return tracks, playlists, nil
 }
