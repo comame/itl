@@ -19,6 +19,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/comame/router-go"
 )
@@ -141,13 +142,14 @@ func main() {
 	})
 
 	var cachedTracks []track
+	var cachedTime time.Time = time.Unix(0, 0)
 
 	router.Get("/api/artwork/:persistent_id", func(w http.ResponseWriter, r *http.Request) {
 		p := router.Params(r)
 		persistentID := p["persistent_id"]
 
-		// ライブラリにアクセスしたとき、大量に同時アクセスが飛んでくるため、メモリ上にトラック情報をキャッシュする
-		if cachedTracks == nil {
+		// ライブラリにアクセスしたとき、大量に同時アクセスが飛んでくるため、メモリ上にトラック情報を 1 分間だけキャッシュする
+		if cachedTracks == nil || time.Now().After(cachedTime.Add(time.Minute)) {
 			t, _, err := getLibrary()
 			if err != nil {
 				log.Println(err)
@@ -155,6 +157,7 @@ func main() {
 				return
 			}
 			cachedTracks = t
+			cachedTime = time.Now()
 		}
 
 		var track *track
@@ -218,7 +221,6 @@ func getLibrary() ([]track, []playlist, error) {
 	return tracks, playlists, nil
 }
 
-// TODO: なんか新しくライブラリに生えた曲のアートワークが404になる
 // track のアートワーク画像を返す。
 // 一度取得されたアートワークはファイルシステムにキャッシュされる。キャッシュがなければ SMB から音声ファイルを取得して、ffmpeg でアートワークを抽出する。
 func extractArtworks(track track) (io.ReadCloser, error) {
